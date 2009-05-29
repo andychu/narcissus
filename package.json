@@ -1,6 +1,5 @@
 {
     "author": "Brendan Eich <brendan@mozilla.org>",
     "contributors": ["Kris Kowal <kris@cixar.com>"],
-    "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
-    "js": "src"
+    "license": "MPL 1.1/GPL 2.0/LGPL 2.1"
 }
