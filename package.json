@@ -1,5 +1,7 @@
 {
     "author": "Brendan Eich <brendan@mozilla.org>",
+    "description": "JavaScript implemented in JavaScript",
+    "keywords": ["javascript", "interpreter", "parser"],
     "contributors": ["Kris Kowal <kris@cixar.com>"],
     "license": "MPL 1.1/GPL 2.0/LGPL 2.1"
 }
