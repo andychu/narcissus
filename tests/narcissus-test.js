@@ -33,9 +33,11 @@ for (var name in exec) {
 
 var parseTree = parse.parse("var i = 10;");
 var parseTree = parse.parse("for (var i = 0; i < 10; i++) { print(i); }");
-var parseTree = parse.parse("if (i = 0) { i++; }");
+var parseTree = parse.parse("var i=5; i");
 //var parseTree = parse.parse("// hello");
 //print(parseTree);
 print(format.format(parseTree));
 
-//print('exec ' + exec);
+var execResult = exec.execute(
+    parseTree, new exec.ExecutionContext(exec.GLOBAL_CODE));
+print("execResult " + execResult);
