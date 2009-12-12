@@ -33,11 +33,26 @@ for (var name in exec) {
 
 var parseTree = parse.parse("var i = 10;");
 var parseTree = parse.parse("for (var i = 0; i < 10; i++) { print(i); }");
-var parseTree = parse.parse("var i=5; i");
+var parseTree = parse.parse("var i=5; i;");
+var parseTree = parse.parse("null;");
 //var parseTree = parse.parse("// hello");
-//print(parseTree);
-print(format.format(parseTree));
+print(parseTree);
+//print(format.format(parseTree));
 
 var execResult = exec.execute(
     parseTree, new exec.ExecutionContext(exec.GLOBAL_CODE));
 print("execResult " + execResult);
+
+parseTree = parse.parse("function t() {return true;}");
+print(parseTree);
+
+execResult = exec.execute(
+    parseTree, new exec.ExecutionContext(exec.FUNCTION_CODE));
+print("execResult FUNCTION_CODE " + execResult);
+
+parseTree = parse.parse("function t() {return true;}");
+//print(parseTree);
+
+execResult = exec.execute(
+    parseTree, new exec.ExecutionContext(exec.EVAL_CODE));
+print("execResult EVAL_CODE " + execResult);
