@@ -1,0 +1,2 @@
+#!/usr/bin/env narwhal
+require('narcissus').main(system.args);
