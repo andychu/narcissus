@@ -1,8 +1,10 @@
 #!/usr/bin/env narwhal
-var defs = require('narcissus/defs');
-var parse = require('narcissus/parse');
-var format = require('narcissus/format');
-var exec = require('narcissus/exec');
+var defs = require('narcissus/defs'),
+    parse = require('narcissus/parse'),
+    format = require('narcissus/format'),
+    exec = require('narcissus/exec');
+
+var file = require('file');
 
 print("\n\n");
 print("DEFS");
@@ -30,28 +32,39 @@ for (var name in exec) {
 
 print("\n\n");
 
-var parseTree = parse.parse("var i = 10;");
-var parseTree = parse.parse("for (var i = 0; i < 10; i++) { print(i); }");
-var parseTree = parse.parse("var i=5; i;");
-var parseTree = parse.parse("print('*** Printing from inside Narcissus');");
-//var parseTree = parse.parse("// hello");
-//print(parseTree);
-//print(format.format(parseTree));
+exports.testMain = function() {
+    var code = "for (var i = 0; i < 10; i++) { print(i); }";
 
-var execResult = exec.execute(
-    parseTree, new exec.ExecutionContext(exec.GLOBAL_CODE));
-//print("execResult " + execResult);
+    // Can parse JSON Template, but can't execute it yet.
+    //var code = file.open('testdata/json-template.js').read();
+    print(code);
+    var parseTree = parse.parse(code);
 
-parseTree = parse.parse("function t() {return true;}");
-//print(parseTree);
+    print("Done parsing");
 
-execResult = exec.execute(
-    parseTree, new exec.ExecutionContext(exec.FUNCTION_CODE));
-//print("execResult FUNCTION_CODE " + execResult);
+    //var parseTree = parse.parse("// hello");
+    //print(parseTree);
+    //print(format.format(parseTree));
 
-parseTree = parse.parse(
-    "function t() {print('in function t ***'); return true;}");
+    var execResult = exec.execute(
+        parseTree, new exec.ExecutionContext(exec.GLOBAL_CODE));
+    //print("execResult " + execResult);
 
-execResult = exec.execute(
-    parseTree, new exec.ExecutionContext(exec.EVAL_CODE));
-print("execResult EVAL_CODE " + execResult);
+    parseTree = parse.parse("function t() {return true;}");
+    //print(parseTree);
+
+    execResult = exec.execute(
+        parseTree, new exec.ExecutionContext(exec.FUNCTION_CODE));
+    //print("execResult FUNCTION_CODE " + execResult);
+
+    parseTree = parse.parse(
+        "function t() {print('in function t ***'); return true;}");
+
+    execResult = exec.execute(
+        parseTree, new exec.ExecutionContext(exec.EVAL_CODE));
+    print("execResult EVAL_CODE " + execResult);
+}
+
+
+if (require.main === module.id)
+    require("test/runner").run(exports);
