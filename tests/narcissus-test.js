@@ -65,6 +65,27 @@ exports.testMain = function() {
     print("execResult EVAL_CODE " + execResult);
 }
 
+exports.testSimpleCode = function() {
+    var code = file.open('testdata/simple.js').read();
+
+    print(code);
+    var parseTree = parse.parse(code);
+    print("Done parsing");
+    var execResult = exec.execute(
+        parseTree, new exec.ExecutionContext(exec.GLOBAL_CODE));
+}
+
+exports.testFunction = function() {
+    // TODO: Make this work
+    return;
+    var code = file.open('testdata/function.js').read();
+
+    print(code);
+    var parseTree = parse.parse(code);
+    print("Done parsing");
+    var execResult = exec.execute(
+        parseTree, new exec.ExecutionContext(exec.EVAL_CODE));
+}
 
 if (require.main === module.id)
     require("test/runner").run(exports);
