@@ -81,10 +81,8 @@ exports.testFunction = function() {
     var code = file.open('testdata/function.js').read();
 
     print(code);
-    var parseTree = parse.parse(code);
-    print("Done parsing");
-    var execResult = exec.execute(
-        parseTree, new exec.ExecutionContext(exec.EVAL_CODE));
+    var result = exec.evaluate(code);
+    print("testFunction " + result);
 }
 
 if (require.main === module.id)
