@@ -5,3 +5,8 @@ Here is the original Narcissus: http://mxr.mozilla.org/mozilla/source/js/narciss
 
 This is a port to Narwhal: http://narwhaljs.org
 
+To develop:
+
+1) Make your sources to patched/*.js
+2) Run build/makelib.py to make lib/narcissus.js
+3) var narcissus = require('narcissus');
