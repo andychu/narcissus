@@ -1,7 +1,8 @@
 #!/usr/bin/env narwhal
 var narcissus = require('narcissus');
 
-var file = require('file');
+var file = require('file'),
+    json = require('json');
 
 print("\n\n");
 print("DEFS");
@@ -65,6 +66,16 @@ exports.testFunction = function() {
     print(code);
     var result = narcissus.evaluate(code);
     print("testFunction " + result);
+}
+
+exports.testParseRealCode = function() {
+    var code = file.open('testdata/json-template.js').read();
+    var parseTree = narcissus.parse(code);
+    print(json.stringify(parseTree, null, 2));
+    return;
+    print("FORMAT");
+    print(narcissus.format(parseTree));
+    print("DONE FORMAT");
 }
 
 if (require.main === module.id)
