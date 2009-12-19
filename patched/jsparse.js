@@ -1,49 +1,18 @@
-/* vim: set sw=4 ts=8 et tw=78: */
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is the Narcissus JavaScript engine.
- *
- * The Initial Developer of the Original Code is
- * Brendan Eich <brendan@mozilla.org>.
- * Portions created by the Initial Developer are Copyright (C) 2004
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
-
 /*
  * Narcissus - JS implemented in JS.
  *
  * Lexical scanner and parser.
  */
 
+var get = function (object, key, fallback) {
+    if (Object.prototype.hasOwnProperty.call(object, key))
+        return object[key];
+    return fallback;
+};
+
 // Build a regexp that recognizes operators and punctuators (except newline).
 var opRegExpSrc = "^";
-for (i in opTypeNames) {
+for (i in defs.opTypeNames) {
     if (i == '\n')
         continue;
     if (opRegExpSrc != "^")
@@ -58,7 +27,7 @@ var fpRegExp = /^\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[
 // A regexp to match regexp literals.
 var reRegExp = /^\/((?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+)\/([gimy]*)/;
 
-function Tokenizer(s, f, l) {
+var Tokenizer = exports.Tokenizer = function Tokenizer(s, f, l) {
     this.cursor = 0;
     this.source = String(s);
     this.tokens = [];
@@ -71,12 +40,13 @@ function Tokenizer(s, f, l) {
 }
 
 Tokenizer.prototype = {
+
     get input() {
         return this.source.substring(this.cursor);
     },
 
     get done() {
-        return this.peek() == END;
+        return this.peek() == defs.END;
     },
 
     get token() {
@@ -89,7 +59,7 @@ Tokenizer.prototype = {
 
     mustMatch: function (tt) {
         if (!this.match(tt))
-            throw this.newSyntaxError("Missing " + tokens[tt].toLowerCase());
+            throw this.newSyntaxError("Missing " + defs.tokens[tt].toLowerCase());
         return this.token;
     },
 
@@ -98,7 +68,7 @@ Tokenizer.prototype = {
         if (this.lookahead) {
             next = this.tokens[(this.tokenIndex + this.lookahead) & 3];
             if (this.scanNewlines && next.lineno != this.lineno)
-                tt = NEWLINE;
+                tt = defs.NEWLINE;
             else
                 tt = next.type;
         } else {
@@ -121,7 +91,7 @@ Tokenizer.prototype = {
             --this.lookahead;
             this.tokenIndex = (this.tokenIndex + 1) & 3;
             token = this.tokens[this.tokenIndex];
-            if (token.type != NEWLINE || this.scanNewlines)
+            if (token.type != defs.NEWLINE || this.scanNewlines)
                 return token.type;
         }
 
@@ -152,41 +122,41 @@ Tokenizer.prototype = {
             this.tokens[this.tokenIndex] = token = {};
 
         if (!input)
-            return token.type = END;
+            return token.type = defs.END;
 
         if ((match = fpRegExp(input))) {
-            token.type = NUMBER;
+            token.type = defs.NUMBER;
             token.value = parseFloat(match[0]);
         } else if ((match = /^0[xX][\da-fA-F]+|^0[0-7]*|^\d+/(input))) {
-            token.type = NUMBER;
+            token.type = defs.NUMBER;
             token.value = parseInt(match[0]);
         } else if ((match = /^[$_\w]+/(input))) {       // FIXME no ES3 unicode
             var id = match[0];
-            token.type = keywords[id] || IDENTIFIER;
+            token.type = get(defs.keywords, id, defs.IDENTIFIER);
             token.value = id;
         } else if ((match = /^"(?:\\.|[^"])*"|^'(?:\\.|[^'])*'/(input))) { //"){
-            token.type = STRING;
+            token.type = defs.STRING;
             token.value = eval(match[0]);
         } else if (this.scanOperand && (match = reRegExp(input))) {
-            token.type = REGEXP;
+            token.type = defs.REGEXP;
             token.value = new RegExp(match[1], match[2]);
         } else if ((match = opRegExp(input))) {
             var op = match[0];
-            if (assignOps[op] && input[op.length] == '=') {
-                token.type = ASSIGN;
-                token.assignOp = GLOBAL[opTypeNames[op]];
+            if (defs.assignOps[op] && input[op.length] == '=') {
+                token.type = defs.ASSIGN;
+                token.assignOp = defs[defs.opTypeNames[op]];
                 match[0] += '=';
             } else {
-                token.type = GLOBAL[opTypeNames[op]];
+                token.type = defs[defs.opTypeNames[op]];
                 if (this.scanOperand &&
-                    (token.type == PLUS || token.type == MINUS)) {
-                    token.type += UNARY_PLUS - PLUS;
+                    (token.type == defs.PLUS || token.type == defs.MINUS)) {
+                    token.type += defs.UNARY_PLUS - defs.PLUS;
                 }
                 token.assignOp = null;
             }
             token.value = op;
         } else if (this.scanNewlines && (match = /^\n/(input))) {
-            token.type = NEWLINE;
+            token.type = defs.NEWLINE;
         } else {
             throw this.newSyntaxError("Illegal token");
         }
@@ -209,9 +179,10 @@ Tokenizer.prototype = {
         e.cursor = this.cursor;
         return e;
     }
+
 };
 
-function CompilerContext(inFunction) {
+var CompilerContext = exports.CompilerContext = function CompilerContext(inFunction) {
     this.inFunction = inFunction;
     this.stmtStack = [];
     this.funDecls = [];
@@ -222,24 +193,19 @@ var CCp = CompilerContext.prototype;
 CCp.bracketLevel = CCp.curlyLevel = CCp.parenLevel = CCp.hookLevel = 0;
 CCp.ecmaStrictMode = CCp.inForLoopInit = false;
 
-function Script(t, x) {
+var Script = exports.Script = function Script(t, x) {
     var n = Statements(t, x);
-    n.type = SCRIPT;
+    n.type = defs.SCRIPT;
     n.funDecls = x.funDecls;
     n.varDecls = x.varDecls;
     return n;
 }
 
-// Node extends Array, which we extend slightly with a top-of-stack method.
-Array.prototype.__defineProperty__(
-    'top',
-    function () {
-        return this.length && this[this.length-1];
-    },
-    false, false, true
-);
+var top = function (stack) {
+    return stack.length && stack[stack.length-1];
+};
 
-function Node(t, type) {
+var Node = exports.Node = function Node(t, type) {
     var token = t.token;
     if (token) {
         this.type = type || token.type;
@@ -273,8 +239,8 @@ Np.push = function (kid) {
 Node.indentLevel = 0;
 
 function tokenstr(tt) {
-    var t = tokens[tt];
-    return /^\W/.test(t) ? opTypeNames[t] : t.toUpperCase();
+    var t = defs.tokens[tt];
+    return /^\W/.test(t) ? defs.opTypeNames[t] : t.toUpperCase();
 }
 
 Np.toString = function () {
@@ -286,11 +252,11 @@ Np.toString = function () {
     a.sort(function (a,b) { return (a.id < b.id) ? -1 : 1; });
     const INDENTATION = "    ";
     var n = ++Node.indentLevel;
-    var s = "{\n" + INDENTATION.repeat(n) + "type: " + tokenstr(this.type);
+    var s = "{\n" + repeat(INDENTATION, n) + "type: " + tokenstr(this.type);
     for (i = 0; i < a.length; i++)
-        s += ",\n" + INDENTATION.repeat(n) + a[i].id + ": " + a[i].value;
+        s += ",\n" + repeat(INDENTATION, n) + a[i].id + ": " + a[i].value;
     n = --Node.indentLevel;
-    s += "\n" + INDENTATION.repeat(n) + "}";
+    s += "\n" + repeat(INDENTATION, n) + "}";
     return s;
 }
 
@@ -298,19 +264,16 @@ Np.getSource = function () {
     return this.tokenizer.source.slice(this.start, this.end);
 };
 
-Np.__defineGetter__('filename',
-                    function () { return this.tokenizer.filename; });
+Np.getFilename = function () {
+    return this.tokenizer.filename;
+};
 
-String.prototype.__defineProperty__(
-    'repeat',
-    function (n) {
-        var s = "", t = this + s;
-        while (--n >= 0)
-            s += t;
-        return s;
-    },
-    false, false, true
-);
+var repeat = function (string, n) {
+    var s = "", t = string + s;
+    while (--n >= 0)
+        s += t;
+    return s;
+};
 
 // Statement stack and nested statement handler.
 function nest(t, x, node, func, end) {
@@ -321,91 +284,92 @@ function nest(t, x, node, func, end) {
     return n;
 }
 
-function Statements(t, x) {
-    var n = new Node(t, BLOCK);
+var Statements = exports.Statements = function Statements(t, x) {
+    var n = new Node(t, defs.BLOCK);
     x.stmtStack.push(n);
-    while (!t.done && t.peek() != RIGHT_CURLY)
+    while (!t.done && t.peek() != defs.RIGHT_CURLY) {
         n.push(Statement(t, x));
+    }
     x.stmtStack.pop();
     return n;
 }
 
-function Block(t, x) {
-    t.mustMatch(LEFT_CURLY);
+var Block = exports.Block = function Block(t, x) {
+    t.mustMatch(defs.LEFT_CURLY);
     var n = Statements(t, x);
-    t.mustMatch(RIGHT_CURLY);
+    t.mustMatch(defs.RIGHT_CURLY);
     return n;
 }
 
-const DECLARED_FORM = 0, EXPRESSED_FORM = 1, STATEMENT_FORM = 2;
+var DECLARED_FORM = 0, EXPRESSED_FORM = 1, STATEMENT_FORM = 2;
 
-function Statement(t, x) {
+var Statement = exports.Statement = function Statement(t, x) {
     var i, label, n, n2, ss, tt = t.get();
 
     // Cases for statements ending in a right curly return early, avoiding the
     // common semicolon insertion magic after this switch.
     switch (tt) {
-      case FUNCTION:
+      case defs.FUNCTION:
         return FunctionDefinition(t, x, true,
                                   (x.stmtStack.length > 1)
                                   ? STATEMENT_FORM
                                   : DECLARED_FORM);
 
-      case LEFT_CURLY:
+      case defs.LEFT_CURLY:
         n = Statements(t, x);
-        t.mustMatch(RIGHT_CURLY);
+        t.mustMatch(defs.RIGHT_CURLY);
         return n;
 
-      case IF:
+      case defs.IF:
         n = new Node(t);
         n.condition = ParenExpression(t, x);
         x.stmtStack.push(n);
         n.thenPart = Statement(t, x);
-        n.elsePart = t.match(ELSE) ? Statement(t, x) : null;
+        n.elsePart = t.match(defs.ELSE) ? Statement(t, x) : null;
         x.stmtStack.pop();
         return n;
 
-      case SWITCH:
+      case defs.SWITCH:
         n = new Node(t);
-        t.mustMatch(LEFT_PAREN);
+        t.mustMatch(defs.LEFT_PAREN);
         n.discriminant = Expression(t, x);
-        t.mustMatch(RIGHT_PAREN);
+        t.mustMatch(defs.RIGHT_PAREN);
         n.cases = [];
         n.defaultIndex = -1;
         x.stmtStack.push(n);
-        t.mustMatch(LEFT_CURLY);
-        while ((tt = t.get()) != RIGHT_CURLY) {
+        t.mustMatch(defs.LEFT_CURLY);
+        while ((tt = t.get()) != defs.RIGHT_CURLY) {
             switch (tt) {
-              case DEFAULT:
+              case defs.DEFAULT:
                 if (n.defaultIndex >= 0)
                     throw t.newSyntaxError("More than one switch default");
                 // FALL THROUGH
-              case CASE:
+              case defs.CASE:
                 n2 = new Node(t);
-                if (tt == DEFAULT)
+                if (tt == defs.DEFAULT)
                     n.defaultIndex = n.cases.length;
                 else
-                    n2.caseLabel = Expression(t, x, COLON);
+                    n2.caseLabel = Expression(t, x, defs.COLON);
                 break;
               default:
                 throw t.newSyntaxError("Invalid switch case");
             }
-            t.mustMatch(COLON);
-            n2.statements = new Node(t, BLOCK);
-            while ((tt=t.peek()) != CASE && tt != DEFAULT && tt != RIGHT_CURLY)
+            t.mustMatch(defs.COLON);
+            n2.statements = new Node(t, defs.BLOCK);
+            while ((tt=t.peek()) != defs.CASE && tt != defs.DEFAULT && tt != defs.RIGHT_CURLY)
                 n2.statements.push(Statement(t, x));
             n.cases.push(n2);
         }
         x.stmtStack.pop();
         return n;
 
-      case FOR:
+      case defs.FOR:
         n = new Node(t);
         n.isLoop = true;
-        t.mustMatch(LEFT_PAREN);
-        if ((tt = t.peek()) != SEMICOLON) {
+        t.mustMatch(defs.LEFT_PAREN);
+        if ((tt = t.peek()) != defs.SEMICOLON) {
             x.inForLoopInit = true;
-            if (tt == VAR || tt == CONST) {
+            if (tt == defs.VAR || tt == defs.CONST) {
                 t.get();
                 n2 = Variables(t, x);
             } else {
@@ -413,12 +377,12 @@ function Statement(t, x) {
             }
             x.inForLoopInit = false;
         }
-        if (n2 && t.match(IN)) {
-            n.type = FOR_IN;
-            if (n2.type == VAR) {
+        if (n2 && t.match(defs.IN)) {
+            n.type = defs.FOR_IN;
+            if (n2.type == defs.VAR) {
                 if (n2.length != 1) {
                     throw new SyntaxError("Invalid for..in left-hand side",
-                                          t.filename, n2.lineno);
+                                          t.getFilename, n2.lineno);
                 }
 
                 // NB: n2[0].type == IDENTIFIER and n2[0].value == n2[0].name.
@@ -431,40 +395,40 @@ function Statement(t, x) {
             n.object = Expression(t, x);
         } else {
             n.setup = n2 || null;
-            t.mustMatch(SEMICOLON);
-            n.condition = (t.peek() == SEMICOLON) ? null : Expression(t, x);
-            t.mustMatch(SEMICOLON);
-            n.update = (t.peek() == RIGHT_PAREN) ? null : Expression(t, x);
+            t.mustMatch(defs.SEMICOLON);
+            n.condition = (t.peek() == defs.SEMICOLON) ? null : Expression(t, x);
+            t.mustMatch(defs.SEMICOLON);
+            n.update = (t.peek() == defs.RIGHT_PAREN) ? null : Expression(t, x);
         }
-        t.mustMatch(RIGHT_PAREN);
+        t.mustMatch(defs.RIGHT_PAREN);
         n.body = nest(t, x, n, Statement);
         return n;
 
-      case WHILE:
+      case defs.WHILE:
         n = new Node(t);
         n.isLoop = true;
         n.condition = ParenExpression(t, x);
         n.body = nest(t, x, n, Statement);
         return n;
 
-      case DO:
+      case defs.DO:
         n = new Node(t);
         n.isLoop = true;
-        n.body = nest(t, x, n, Statement, WHILE);
+        n.body = nest(t, x, n, Statement, defs.WHILE);
         n.condition = ParenExpression(t, x);
         if (!x.ecmaStrictMode) {
             // <script language="JavaScript"> (without version hints) may need
             // automatic semicolon insertion without a newline after do-while.
             // See http://bugzilla.mozilla.org/show_bug.cgi?id=238945.
-            t.match(SEMICOLON);
+            t.match(defs.SEMICOLON);
             return n;
         }
         break;
 
-      case BREAK:
-      case CONTINUE:
+      case defs.BREAK:
+      case defs.CONTINUE:
         n = new Node(t);
-        if (t.peekOnSameLine() == IDENTIFIER) {
+        if (t.peekOnSameLine() == defs.IDENTIFIER) {
             t.get();
             n.label = t.token.value;
         }
@@ -479,87 +443,92 @@ function Statement(t, x) {
         } else {
             do {
                 if (--i < 0) {
-                    throw t.newSyntaxError("Invalid " + ((tt == BREAK)
+                    throw t.newSyntaxError("Invalid " + ((tt == defs.BREAK)
                                                          ? "break"
                                                          : "continue"));
                 }
-            } while (!ss[i].isLoop && (tt != BREAK || ss[i].type != SWITCH));
+            } while (!ss[i].isLoop && (tt != defs.BREAK || ss[i].type != defs.SWITCH));
         }
         n.target = ss[i];
         break;
 
-      case TRY:
+      case defs.TRY:
         n = new Node(t);
         n.tryBlock = Block(t, x);
         n.catchClauses = [];
-        while (t.match(CATCH)) {
+        while (t.match(defs.CATCH)) {
             n2 = new Node(t);
-            t.mustMatch(LEFT_PAREN);
-            n2.varName = t.mustMatch(IDENTIFIER).value;
-            if (t.match(IF)) {
+            t.mustMatch(defs.LEFT_PAREN);
+            n2.varName = t.mustMatch(defs.IDENTIFIER).value;
+            if (t.match(defs.IF)) {
                 if (x.ecmaStrictMode)
                     throw t.newSyntaxError("Illegal catch guard");
-                if (n.catchClauses.length && !n.catchClauses.top().guard)
+                if (n.catchClauses.length && !top(n.catchClauses).guard)
                     throw t.newSyntaxError("Guarded catch after unguarded");
                 n2.guard = Expression(t, x);
             } else {
                 n2.guard = null;
             }
-            t.mustMatch(RIGHT_PAREN);
+            t.mustMatch(defs.RIGHT_PAREN);
             n2.block = Block(t, x);
             n.catchClauses.push(n2);
         }
-        if (t.match(FINALLY))
+        if (t.match(defs.FINALLY))
             n.finallyBlock = Block(t, x);
         if (!n.catchClauses.length && !n.finallyBlock)
             throw t.newSyntaxError("Invalid try statement");
         return n;
 
-      case CATCH:
-      case FINALLY:
-        throw t.newSyntaxError(tokens[tt] + " without preceding try");
+      case defs.CATCH:
+      case defs.FINALLY:
+        throw t.newSyntaxError(defs.tokens[tt] + " without preceding try");
 
-      case THROW:
+      case defs.THROW:
         n = new Node(t);
         n.exception = Expression(t, x);
         break;
 
-      case RETURN:
+      case defs.RETURN:
         if (!x.inFunction)
             throw t.newSyntaxError("Invalid return");
         n = new Node(t);
         tt = t.peekOnSameLine();
-        if (tt != END && tt != NEWLINE && tt != SEMICOLON && tt != RIGHT_CURLY)
+        if (
+            tt != defs.END &&
+            tt != defs.NEWLINE &&
+            tt != defs.SEMICOLON &&
+            tt != defs.RIGHT_CURLY
+        )
             n.value = Expression(t, x);
         break;
 
-      case WITH:
+      case defs.WITH:
         n = new Node(t);
         n.object = ParenExpression(t, x);
         n.body = nest(t, x, n, Statement);
         return n;
 
-      case VAR:
-      case CONST:
+      case defs.VAR:
+      case defs.CONST:
         n = Variables(t, x);
         break;
 
-      case DEBUGGER:
+      case defs.DEBUGGER:
         n = new Node(t);
         break;
 
-      case NEWLINE:
-      case SEMICOLON:
-        n = new Node(t, SEMICOLON);
+      case defs.NEWLINE:
+      case defs.SEMICOLON:
+        n = new Node(t, defs.SEMICOLON);
         n.expression = null;
         return n;
 
       default:
-        if (tt == IDENTIFIER) {
+        if (tt == defs.IDENTIFIER) {
             t.scanOperand = false;
             tt = t.peek();
             t.scanOperand = true;
-            if (tt == COLON) {
+            if (tt == defs.COLON) {
                 label = t.token.value;
                 ss = x.stmtStack;
                 for (i = ss.length-1; i >= 0; --i) {
@@ -567,14 +536,14 @@ function Statement(t, x) {
                         throw t.newSyntaxError("Duplicate label");
                 }
                 t.get();
-                n = new Node(t, LABEL);
+                n = new Node(t, defs.LABEL);
                 n.label = label;
                 n.statement = nest(t, x, n, Statement);
                 return n;
             }
         }
 
-        n = new Node(t, SEMICOLON);
+        n = new Node(t, defs.SEMICOLON);
         t.unget();
         n.expression = Expression(t, x);
         n.end = n.expression.end;
@@ -583,67 +552,69 @@ function Statement(t, x) {
 
     if (t.lineno == t.token.lineno) {
         tt = t.peekOnSameLine();
-        if (tt != END && tt != NEWLINE && tt != SEMICOLON && tt != RIGHT_CURLY)
+        if (tt != defs.END && tt != defs.NEWLINE && tt != defs.SEMICOLON && tt != defs.RIGHT_CURLY)
             throw t.newSyntaxError("Missing ; before statement");
     }
-    t.match(SEMICOLON);
+    t.match(defs.SEMICOLON);
     return n;
 }
 
+var FunctionDefinition =
+exports.FunctionDefinition =
 function FunctionDefinition(t, x, requireName, functionForm) {
     var f = new Node(t);
-    if (f.type != FUNCTION)
-        f.type = (f.value == "get") ? GETTER : SETTER;
-    if (t.match(IDENTIFIER))
+    if (f.type != defs.FUNCTION)
+        f.type = (f.value == "get") ? defs.GETTER : defs.SETTER;
+    if (t.match(defs.IDENTIFIER))
         f.name = t.token.value;
     else if (requireName)
         throw t.newSyntaxError("Missing function identifier");
 
-    t.mustMatch(LEFT_PAREN);
+    t.mustMatch(defs.LEFT_PAREN);
     f.params = [];
     var tt;
-    while ((tt = t.get()) != RIGHT_PAREN) {
-        if (tt != IDENTIFIER)
+    while ((tt = t.get()) != defs.RIGHT_PAREN) {
+        if (tt != defs.IDENTIFIER)
             throw t.newSyntaxError("Missing formal parameter");
         f.params.push(t.token.value);
-        if (t.peek() != RIGHT_PAREN)
-            t.mustMatch(COMMA);
+        if (t.peek() != defs.RIGHT_PAREN)
+            t.mustMatch(defs.COMMA);
     }
 
-    t.mustMatch(LEFT_CURLY);
+    t.mustMatch(defs.LEFT_CURLY);
     var x2 = new CompilerContext(true);
     f.body = Script(t, x2);
-    t.mustMatch(RIGHT_CURLY);
+    t.mustMatch(defs.RIGHT_CURLY);
     f.end = t.token.end;
 
     f.functionForm = functionForm;
-    if (functionForm == DECLARED_FORM)
+    if (functionForm == defs.DECLARED_FORM)
         x.funDecls.push(f);
     return f;
 }
 
-function Variables(t, x) {
+var Variables = exports.Variables = function Variables(t, x) {
     var n = new Node(t);
     do {
-        t.mustMatch(IDENTIFIER);
+        t.mustMatch(defs.IDENTIFIER);
         var n2 = new Node(t);
         n2.name = n2.value;
-        if (t.match(ASSIGN)) {
+        if (t.match(defs.ASSIGN)) {
             if (t.token.assignOp)
                 throw t.newSyntaxError("Invalid variable initialization");
-            n2.initializer = Expression(t, x, COMMA);
+            n2.initializer = Expression(t, x, defs.COMMA);
         }
-        n2.readOnly = (n.type == CONST);
+        n2.readOnly = (n.type == defs.CONST);
         n.push(n2);
         x.varDecls.push(n2);
-    } while (t.match(COMMA));
+    } while (t.match(defs.COMMA));
     return n;
 }
 
-function ParenExpression(t, x) {
-    t.mustMatch(LEFT_PAREN);
+var ParenExpression = exports.ParenExpression = function ParenExpression(t, x) {
+    t.mustMatch(defs.LEFT_PAREN);
     var n = Expression(t, x);
-    t.mustMatch(RIGHT_PAREN);
+    t.mustMatch(defs.RIGHT_PAREN);
     return n;
 }
 
@@ -671,7 +642,7 @@ var opPrecedence = {
 
 // Map operator type code to precedence.
 for (i in opPrecedence)
-    opPrecedence[GLOBAL[i]] = opPrecedence[i];
+    opPrecedence[defs[i]] = opPrecedence[i];
 
 var opArity = {
     COMMA: -2,
@@ -696,9 +667,9 @@ var opArity = {
 
 // Map operator type code to arity.
 for (i in opArity)
-    opArity[GLOBAL[i]] = opArity[i];
+    opArity[defs[i]] = opArity[i];
 
-function Expression(t, x, stop) {
+var Expression = exports.Expression = function Expression(t, x, stop) {
     var n, id, tt, operators = [], operands = [];
     var bl = x.bracketLevel, cl = x.curlyLevel, pl = x.parenLevel,
         hl = x.hookLevel;
@@ -732,7 +703,7 @@ function Expression(t, x, stop) {
     }
 
 loop:
-    while ((tt = t.get()) != END) {
+    while ((tt = t.get()) != defs.END) {
         if (tt == stop &&
             x.bracketLevel == bl && x.curlyLevel == cl && x.parenLevel == pl &&
             x.hookLevel == hl) {
@@ -741,36 +712,36 @@ loop:
             break;
         }
         switch (tt) {
-          case SEMICOLON:
+          case defs.SEMICOLON:
             // NB: cannot be empty, Statement handled that.
             break loop;
 
-          case ASSIGN:
-          case HOOK:
-          case COLON:
+          case defs.ASSIGN:
+          case defs.HOOK:
+          case defs.COLON:
             if (t.scanOperand)
                 break loop;
             // Use >, not >=, for right-associative ASSIGN and HOOK/COLON.
-            while (opPrecedence[operators.top().type] > opPrecedence[tt] ||
-                   (tt == COLON && operators.top().type == ASSIGN)) {
+            while (opPrecedence[top(operators).type] > opPrecedence[tt] ||
+                   (tt == defs.COLON && top(operators).type == defs.ASSIGN)) {
                 reduce();
             }
-            if (tt == COLON) {
-                n = operators.top();
-                if (n.type != HOOK)
+            if (tt == defs.COLON) {
+                n = top(operators);
+                if (n.type != defs.HOOK)
                     throw t.newSyntaxError("Invalid label");
                 --x.hookLevel;
             } else {
                 operators.push(new Node(t));
-                if (tt == ASSIGN)
-                    operands.top().assignOp = t.token.assignOp;
+                if (tt == defs.ASSIGN)
+                    top(operands).assignOp = t.token.assignOp;
                 else
                     ++x.hookLevel;      // tt == HOOK
             }
             t.scanOperand = true;
             break;
 
-          case IN:
+          case defs.IN:
             // An in operator should not be parsed if we're parsing the head of
             // a for (...) loop, unless it is in the then part of a conditional
             // expression, or parenthesized somehow.
@@ -779,44 +750,50 @@ loop:
                 break loop;
             }
             // FALL THROUGH
-          case COMMA:
+          case defs.COMMA:
             // Treat comma as left-associative so reduce can fold left-heavy
             // COMMA trees into a single array.
             // FALL THROUGH
-          case OR:
-          case AND:
-          case BITWISE_OR:
-          case BITWISE_XOR:
-          case BITWISE_AND:
-          case EQ: case NE: case STRICT_EQ: case STRICT_NE:
-          case LT: case LE: case GE: case GT:
-          case INSTANCEOF:
-          case LSH: case RSH: case URSH:
-          case PLUS: case MINUS:
-          case MUL: case DIV: case MOD:
-          case DOT:
+          case defs.OR:
+          case defs.AND:
+          case defs.BITWISE_OR:
+          case defs.BITWISE_XOR:
+          case defs.BITWISE_AND:
+          case defs.EQ: case defs.NE: case defs.STRICT_EQ: case defs.STRICT_NE:
+          case defs.LT: case defs.LE: case defs.GE: case defs.GT:
+          case defs.INSTANCEOF:
+          case defs.LSH: case defs.RSH: case defs.URSH:
+          case defs.PLUS: case defs.MINUS:
+          case defs.MUL: case defs.DIV: case defs.MOD:
+          case defs.DOT:
             if (t.scanOperand)
                 break loop;
-            while (opPrecedence[operators.top().type] >= opPrecedence[tt])
+            while (opPrecedence[top(operators).type] >= opPrecedence[tt])
                 reduce();
-            if (tt == DOT) {
-                t.mustMatch(IDENTIFIER);
-                operands.push(new Node(t, DOT, operands.pop(), new Node(t)));
+            if (tt == defs.DOT) {
+                t.mustMatch(defs.IDENTIFIER);
+                operands.push(new Node(t, defs.DOT, operands.pop(), new Node(t)));
             } else {
                 operators.push(new Node(t));
                 t.scanOperand = true;
             }
             break;
 
-          case DELETE: case VOID: case TYPEOF:
-          case NOT: case BITWISE_NOT: case UNARY_PLUS: case UNARY_MINUS:
-          case NEW:
+          case defs.DELETE:
+          case defs.VOID:
+          case defs.TYPEOF:
+          case defs.NOT:
+          case defs.BITWISE_NOT:
+          case defs.UNARY_PLUS:
+          case defs.UNARY_MINUS:
+          case defs.NEW:
             if (!t.scanOperand)
                 break loop;
             operators.push(new Node(t));
             break;
 
-          case INCREMENT: case DECREMENT:
+          case defs.INCREMENT:
+          case defs.DECREMENT:
             if (t.scanOperand) {
                 operators.push(new Node(t));  // prefix increment or decrement
             } else {
@@ -827,7 +804,7 @@ loop:
                 }
 
                 // Use >, not >=, so postfix has higher precedence than prefix.
-                while (opPrecedence[operators.top().type] > opPrecedence[tt])
+                while (opPrecedence[top(operators).type] > opPrecedence[tt])
                     reduce();
                 n = new Node(t, tt, operands.pop());
                 n.postfix = true;
@@ -835,147 +812,153 @@ loop:
             }
             break;
 
-          case FUNCTION:
+          case defs.FUNCTION:
             if (!t.scanOperand)
                 break loop;
-            operands.push(FunctionDefinition(t, x, false, EXPRESSED_FORM));
+            operands.push(FunctionDefinition(t, x, false, defs.EXPRESSED_FORM));
             t.scanOperand = false;
             break;
 
-          case NULL: case THIS: case TRUE: case FALSE:
-          case IDENTIFIER: case NUMBER: case STRING: case REGEXP:
+          case defs.NULL:
+          case defs.THIS:
+          case defs.TRUE:
+          case defs.FALSE:
+          case defs.IDENTIFIER:
+          case defs.NUMBER:
+          case defs.STRING:
+          case defs.REGEXP:
             if (!t.scanOperand)
                 break loop;
             operands.push(new Node(t));
             t.scanOperand = false;
             break;
 
-          case LEFT_BRACKET:
+          case defs.LEFT_BRACKET:
             if (t.scanOperand) {
                 // Array initialiser.  Parse using recursive descent, as the
                 // sub-grammar here is not an operator grammar.
-                n = new Node(t, ARRAY_INIT);
-                while ((tt = t.peek()) != RIGHT_BRACKET) {
-                    if (tt == COMMA) {
+                n = new Node(t, defs.ARRAY_INIT);
+                while ((tt = t.peek()) != defs.RIGHT_BRACKET) {
+                    if (tt == defs.COMMA) {
                         t.get();
                         n.push(null);
                         continue;
                     }
-                    n.push(Expression(t, x, COMMA));
-                    if (!t.match(COMMA))
+                    n.push(Expression(t, x, defs.COMMA));
+                    if (!t.match(defs.COMMA))
                         break;
                 }
-                t.mustMatch(RIGHT_BRACKET);
+                t.mustMatch(defs.RIGHT_BRACKET);
                 operands.push(n);
                 t.scanOperand = false;
             } else {
                 // Property indexing operator.
-                operators.push(new Node(t, INDEX));
+                operators.push(new Node(t, defs.INDEX));
                 t.scanOperand = true;
                 ++x.bracketLevel;
             }
             break;
 
-          case RIGHT_BRACKET:
+          case defs.RIGHT_BRACKET:
             if (t.scanOperand || x.bracketLevel == bl)
                 break loop;
-            while (reduce().type != INDEX)
+            while (reduce().type != defs.INDEX)
                 continue;
             --x.bracketLevel;
             break;
 
-          case LEFT_CURLY:
+          case defs.LEFT_CURLY:
             if (!t.scanOperand)
                 break loop;
             // Object initialiser.  As for array initialisers (see above),
             // parse using recursive descent.
             ++x.curlyLevel;
-            n = new Node(t, OBJECT_INIT);
+            n = new Node(t, defs.OBJECT_INIT);
           object_init:
-            if (!t.match(RIGHT_CURLY)) {
+            if (!t.match(defs.RIGHT_CURLY)) {
                 do {
                     tt = t.get();
                     if ((t.token.value == "get" || t.token.value == "set") &&
-                        t.peek() == IDENTIFIER) {
+                        t.peek() == defs.IDENTIFIER) {
                         if (x.ecmaStrictMode)
                             throw t.newSyntaxError("Illegal property accessor");
-                        n.push(FunctionDefinition(t, x, true, EXPRESSED_FORM));
+                        n.push(FunctionDefinition(t, x, true, defs.EXPRESSED_FORM));
                     } else {
                         switch (tt) {
-                          case IDENTIFIER:
-                          case NUMBER:
-                          case STRING:
+                          case defs.IDENTIFIER:
+                          case defs.NUMBER:
+                          case defs.STRING:
                             id = new Node(t);
                             break;
-                          case RIGHT_CURLY:
+                          case defs.RIGHT_CURLY:
                             if (x.ecmaStrictMode)
                                 throw t.newSyntaxError("Illegal trailing ,");
                             break object_init;
                           default:
                             throw t.newSyntaxError("Invalid property name");
                         }
-                        t.mustMatch(COLON);
-                        n.push(new Node(t, PROPERTY_INIT, id,
-                                        Expression(t, x, COMMA)));
+                        t.mustMatch(defs.COLON);
+                        n.push(new Node(t, defs.PROPERTY_INIT, id,
+                                        Expression(t, x, defs.COMMA)));
                     }
-                } while (t.match(COMMA));
-                t.mustMatch(RIGHT_CURLY);
+                } while (t.match(defs.COMMA));
+                t.mustMatch(defs.RIGHT_CURLY);
             }
             operands.push(n);
             t.scanOperand = false;
             --x.curlyLevel;
             break;
 
-          case RIGHT_CURLY:
+          case defs.RIGHT_CURLY:
             if (!t.scanOperand && x.curlyLevel != cl)
                 throw "PANIC: right curly botch";
             break loop;
 
-          case LEFT_PAREN:
+          case defs.LEFT_PAREN:
             if (t.scanOperand) {
-                operators.push(new Node(t, GROUP));
+                operators.push(new Node(t, defs.GROUP));
             } else {
-                while (opPrecedence[operators.top().type] > opPrecedence[NEW])
+                while (opPrecedence[top(operators).type] > opPrecedence[defs.NEW])
                     reduce();
 
                 // Handle () now, to regularize the n-ary case for n > 0.
                 // We must set scanOperand in case there are arguments and
                 // the first one is a regexp or unary+/-.
-                n = operators.top();
+                n = top(operators);
                 t.scanOperand = true;
-                if (t.match(RIGHT_PAREN)) {
-                    if (n.type == NEW) {
+                if (t.match(defs.RIGHT_PAREN)) {
+                    if (n.type == defs.NEW) {
                         --operators.length;
                         n.push(operands.pop());
                     } else {
-                        n = new Node(t, CALL, operands.pop(),
-                                     new Node(t, LIST));
+                        n = new Node(t, defs.CALL, operands.pop(),
+                                     new Node(t, defs.LIST));
                     }
                     operands.push(n);
                     t.scanOperand = false;
                     break;
                 }
-                if (n.type == NEW)
-                    n.type = NEW_WITH_ARGS;
+                if (n.type == defs.NEW)
+                    n.type = defs.NEW_WITH_ARGS;
                 else
-                    operators.push(new Node(t, CALL));
+                    operators.push(new Node(t, defs.CALL));
             }
             ++x.parenLevel;
             break;
 
-          case RIGHT_PAREN:
+          case defs.RIGHT_PAREN:
             if (t.scanOperand || x.parenLevel == pl)
                 break loop;
-            while ((tt = reduce().type) != GROUP && tt != CALL &&
-                   tt != NEW_WITH_ARGS) {
+            while ((tt = reduce().type) != defs.GROUP && tt != defs.CALL &&
+                   tt != defs.NEW_WITH_ARGS) {
                 continue;
             }
-            if (tt != GROUP) {
-                n = operands.top();
-                if (n[1].type != COMMA)
-                    n[1] = new Node(t, LIST, n[1]);
+            if (tt != defs.GROUP) {
+                n = top(operands);
+                if (n[1].type != defs.COMMA)
+                    n[1] = new Node(t, defs.LIST, n[1]);
                 else
-                    n[1].type = LIST;
+                    n[1].type = defs.LIST;
             }
             --x.parenLevel;
             break;
@@ -1005,7 +988,11 @@ loop:
     return operands.pop();
 }
 
-function parse(s, f, l) {
+// Args:
+//   s: string to parse
+//   f: filename, defaults to ""
+//   l: line number, defaults to 1
+var parse = exports.parse = function parse(s, f, l) {
     var t = new Tokenizer(s, f, l);
     var x = new CompilerContext(false);
     var n = Script(t, x);

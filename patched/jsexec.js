@@ -1,41 +1,3 @@
-/* ***** BEGIN LICENSE BLOCK *****
- * vim: set ts=4 sw=4 et tw=80:
- *
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is the Narcissus JavaScript engine.
- *
- * The Initial Developer of the Original Code is
- * Brendan Eich <brendan@mozilla.org>.
- * Portions created by the Initial Developer are Copyright (C) 2004
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
-
 /*
  * Narcissus - JS implemented in JS.
  *
@@ -47,9 +9,11 @@
  * an extra level of prototype-based delegation.
  */
 
-const GLOBAL_CODE = 0, EVAL_CODE = 1, FUNCTION_CODE = 2;
+var GLOBAL_CODE = exports.GLOBAL_CODE = 0,
+    EVAL_CODE = exports.EVAL_CODE = 1,
+    FUNCTION_CODE = exports.FUNCTION_CODE = 2;
 
-function ExecutionContext(type) {
+var ExecutionContext = exports.ExecutionContext = function (type) {
     this.type = type;
 }
 
@@ -71,7 +35,7 @@ var global = {
         ExecutionContext.current = x2;
         try {
             execute(parse(s), x2);
-        } catch (e if e == THROW) {
+        } catch (e if e == defs.THROW) {
             x.result = x2.result;
             throw e;
         } finally {
@@ -134,7 +98,7 @@ var global = {
     Math: Math,
 
     // Extensions to ECMA.
-    snarf: snarf, evaluate: evaluate,
+    //snarf: snarf, evaluate: evaluate,
     load: function load(s) {
         if (typeof s != "string")
             return s;
@@ -152,8 +116,20 @@ function hasDirectProperty(o, p) {
 // Reflect a host class into the target global environment by delegation.
 function reflectClass(name, proto) {
     var gctor = global[name];
-    gctor.__defineProperty__('prototype', proto, true, true, true);
-    proto.__defineProperty__('constructor', gctor, false, false, true);
+    // error: "RangeError: This implementation of Object.defineProperty does not
+    // support configurable, enumerable, or writable"
+    Object.defineProperty(gctor, 'prototype', {
+        value: proto,
+        //writable: true,
+        //enumerable: true,
+        //configurable: true
+    });
+    Object.defineProperty(proto, 'constructor', {
+        value: gctor,
+        //writable: false, 
+        //enumerable: false,
+        //configurable: true
+    });
     return proto;
 }
 
@@ -187,7 +163,7 @@ function getValue(v) {
     if (v instanceof Reference) {
         if (!v.base) {
             throw new ReferenceError(v.propertyName + " is not defined",
-                                     v.node.filename, v.node.lineno);
+                                     v.node.getFilename, v.node.lineno);
         }
         return v.base[v.propertyName];
     }
@@ -232,22 +208,30 @@ function toObject(v, r, rn) {
              : new TypeError(message);
 }
 
-function execute(n, x) {
+// Recursive execution function for the metacircular interpreter.
+//
+// Args:
+//   n: Script object (or Node?)
+//   x: ExecutionContext
+var execute = exports.execute = function(n, x) {
     var a, f, i, j, r, s, t, u, v;
 
+    // parse.parse creates nodes with a 'type' attribute
     switch (n.type) {
-      case FUNCTION:
-        if (n.functionForm != DECLARED_FORM) {
-            if (!n.name || n.functionForm == STATEMENT_FORM) {
+      case defs.FUNCTION:
+        if (n.functionForm != defs.DECLARED_FORM) {
+            if (!n.name || n.functionForm == defs.STATEMENT_FORM) {
                 v = new FunctionObject(n, x.scope);
-                if (n.functionForm == STATEMENT_FORM)
-                    x.scope.object.__defineProperty__(n.name, v, true);
+                if (n.functionForm == defs.STATEMENT_FORM)
+                    Object.defineProperty(x.scope, n.name, {
+                       value: v /*true*/});
             } else {
                 t = new Object;
                 x.scope = {object: t, parent: x.scope};
                 try {
                     v = new FunctionObject(n, x.scope);
-                    t.__defineProperty__(n.name, v, true, true);
+                    Object.defineProperty(t, n.name, {
+                        value: v /*, true, true*/});
                 } finally {
                     x.scope = x.scope.parent;
                 }
@@ -255,13 +239,13 @@ function execute(n, x) {
         }
         break;
 
-      case SCRIPT:
+      case defs.SCRIPT:
         t = x.scope.object;
         a = n.funDecls;
         for (i = 0, j = a.length; i < j; i++) {
             s = a[i].name;
             f = new FunctionObject(a[i], x.scope);
-            t.__defineProperty__(s, f, x.type != EVAL_CODE);
+            Object.defineProperty(t, s, {value: f /* x.type != EVAL_CODE*/});
         }
         a = n.varDecls;
         for (i = 0, j = a.length; i < j; i++) {
@@ -272,25 +256,25 @@ function execute(n, x) {
                                     u.filename, u.lineno);
             }
             if (u.readOnly || !hasDirectProperty(t, s)) {
-                t.__defineProperty__(s, undefined, x.type != EVAL_CODE,
-                                     u.readOnly);
+                Object.defineProperty(t, s, {
+                    value: undefined, /*x.type != EVAL_CODE, u.readOnly*/});
             }
         }
         // FALL THROUGH
 
-      case BLOCK:
+      case defs.BLOCK:
         for (i = 0, j = n.length; i < j; i++)
             execute(n[i], x);
         break;
 
-      case IF:
+      case defs.IF:
         if (getValue(execute(n.condition, x)))
             execute(n.thenPart, x);
         else if (n.elsePart)
             execute(n.elsePart, x);
         break;
 
-      case SWITCH:
+      case defs.SWITCH:
         s = getValue(execute(n.discriminant, x));
         a = n.cases;
         var matchDefault = false;
@@ -305,7 +289,7 @@ function execute(n, x) {
                 break;                      // no default, exit switch_loop
             }
             t = a[i];                       // next case (might be default!)
-            if (t.type == CASE) {
+            if (t.type == defs.CASE) {
                 u = getValue(execute(t.caseLabel, x));
             } else {
                 if (!matchDefault)          // not defaulting, skip for now
@@ -317,7 +301,7 @@ function execute(n, x) {
                     if (t.statements.length) {
                         try {
                             execute(t.statements, x);
-                        } catch (e if e == BREAK && x.target == n) {
+                        } catch (e if e == defs.BREAK && x.target == n) {
                             break switch_loop;
                         }
                     }
@@ -330,23 +314,23 @@ function execute(n, x) {
         }
         break;
 
-      case FOR:
+      case defs.FOR:
         n.setup && getValue(execute(n.setup, x));
         // FALL THROUGH
-      case WHILE:
+      case defs.WHILE:
         while (!n.condition || getValue(execute(n.condition, x))) {
             try {
                 execute(n.body, x);
-            } catch (e if e == BREAK && x.target == n) {
+            } catch (e if e == defs.BREAK && x.target == n) {
                 break;
-            } catch (e if e == CONTINUE && x.target == n) {
+            } catch (e if e == defs.CONTINUE && x.target == n) {
                 continue;
             }
             n.update && getValue(execute(n.update, x));
         }
         break;
 
-      case FOR_IN:
+      case defs.FOR_IN:
         u = n.varDecl;
         if (u)
             execute(u, x);
@@ -371,37 +355,38 @@ function execute(n, x) {
         }
         break;
 
-      case DO:
+      case defs.DO:
         do {
             try {
                 execute(n.body, x);
-            } catch (e if e == BREAK && x.target == n) {
+            } catch (e if e == defs.BREAK && x.target == n) {
                 break;
-            } catch (e if e == CONTINUE && x.target == n) {
+            } catch (e if e == defs.CONTINUE && x.target == n) {
                 continue;
             }
         } while (getValue(execute(n.condition, x)));
         break;
 
-      case BREAK:
-      case CONTINUE:
+      case defs.BREAK:
+      case defs.CONTINUE:
         x.target = n.target;
         throw n.type;
 
-      case TRY:
+      case defs.TRY:
         try {
             execute(n.tryBlock, x);
-        } catch (e if e == THROW && (j = n.catchClauses.length)) {
+        } catch (e if e == defs.THROW && (j = n.catchClauses.length)) {
             e = x.result;
             x.result = undefined;
             for (i = 0; ; i++) {
                 if (i == j) {
                     x.result = e;
-                    throw THROW;
+                    throw defs.THROW;
                 }
                 t = n.catchClauses[i];
                 x.scope = {object: {}, parent: x.scope};
-                x.scope.object.__defineProperty__(t.varName, e, true);
+                Object.defineProperty(x.scope, t.varName, {
+                   value: e, /*true*/});
                 try {
                     if (t.guard && !getValue(execute(t.guard, x)))
                         continue;
@@ -417,15 +402,15 @@ function execute(n, x) {
         }
         break;
 
-      case THROW:
+      case defs.THROW:
         x.result = getValue(execute(n.exception, x));
-        throw THROW;
+        throw defs.THROW;
 
-      case RETURN:
+      case defs.RETURN:
         x.result = getValue(execute(n.value, x));
         throw RETURN;
 
-      case WITH:
+      case defs.WITH:
         r = execute(n.object, x);
         t = toObject(getValue(r), r, n.object);
         x.scope = {object: t, parent: x.scope};
@@ -436,8 +421,8 @@ function execute(n, x) {
         }
         break;
 
-      case VAR:
-      case CONST:
+      case defs.VAR:
+      case defs.CONST:
         for (i = 0, j = n.length; i < j; i++) {
             u = n[i].initializer;
             if (!u)
@@ -448,34 +433,35 @@ function execute(n, x) {
                     break;
             }
             u = getValue(execute(u, x));
-            if (n.type == CONST)
-                s.object.__defineProperty__(t, u, x.type != EVAL_CODE, true);
+            if (n.type == defs.CONST)
+                Object.defineProperty(s, t, {
+                    value: u /*x.type != EVAL_CODE, true */});
             else
                 s.object[t] = u;
         }
         break;
 
-      case DEBUGGER:
+      case defs.DEBUGGER:
         throw "NYI: " + tokens[n.type];
 
-      case SEMICOLON:
+      case defs.SEMICOLON:
         if (n.expression)
             x.result = getValue(execute(n.expression, x));
         break;
 
-      case LABEL:
+      case defs.LABEL:
         try {
             execute(n.statement, x);
-        } catch (e if e == BREAK && x.target == n) {
+        } catch (e if e == defs.BREAK && x.target == n) {
         }
         break;
 
-      case COMMA:
+      case defs.COMMA:
         for (i = 0, j = n.length; i < j; i++)
             v = getValue(execute(n[i], x));
         break;
 
-      case ASSIGN:
+      case defs.ASSIGN:
         r = execute(n[0], x);
         t = n[0].assignOp;
         if (t)
@@ -483,84 +469,84 @@ function execute(n, x) {
         v = getValue(execute(n[1], x));
         if (t) {
             switch (t) {
-              case BITWISE_OR:  v = u | v; break;
-              case BITWISE_XOR: v = u ^ v; break;
-              case BITWISE_AND: v = u & v; break;
-              case LSH:         v = u << v; break;
-              case RSH:         v = u >> v; break;
-              case URSH:        v = u >>> v; break;
-              case PLUS:        v = u + v; break;
-              case MINUS:       v = u - v; break;
-              case MUL:         v = u * v; break;
-              case DIV:         v = u / v; break;
-              case MOD:         v = u % v; break;
+              case defs.BITWISE_OR:  v = u | v; break;
+              case defs.BITWISE_XOR: v = u ^ v; break;
+              case defs.BITWISE_AND: v = u & v; break;
+              case defs.LSH:         v = u << v; break;
+              case defs.RSH:         v = u >> v; break;
+              case defs.URSH:        v = u >>> v; break;
+              case defs.PLUS:        v = u + v; break;
+              case defs.MINUS:       v = u - v; break;
+              case defs.MUL:         v = u * v; break;
+              case defs.DIV:         v = u / v; break;
+              case defs.MOD:         v = u % v; break;
             }
         }
         putValue(r, v, n[0]);
         break;
 
-      case HOOK:
+      case defs.HOOK:
         v = getValue(execute(n[0], x)) ? getValue(execute(n[1], x))
                                        : getValue(execute(n[2], x));
         break;
 
-      case OR:
+      case defs.OR:
         v = getValue(execute(n[0], x)) || getValue(execute(n[1], x));
         break;
 
-      case AND:
+      case defs.AND:
         v = getValue(execute(n[0], x)) && getValue(execute(n[1], x));
         break;
 
-      case BITWISE_OR:
+      case defs.BITWISE_OR:
         v = getValue(execute(n[0], x)) | getValue(execute(n[1], x));
         break;
 
-      case BITWISE_XOR:
+      case defs.BITWISE_XOR:
         v = getValue(execute(n[0], x)) ^ getValue(execute(n[1], x));
         break;
 
-      case BITWISE_AND:
+      case defs.BITWISE_AND:
         v = getValue(execute(n[0], x)) & getValue(execute(n[1], x));
         break;
 
-      case EQ:
+      case defs.EQ:
         v = getValue(execute(n[0], x)) == getValue(execute(n[1], x));
         break;
 
-      case NE:
+      case defs.NE:
         v = getValue(execute(n[0], x)) != getValue(execute(n[1], x));
         break;
 
-      case STRICT_EQ:
+      case defs.STRICT_EQ:
         v = getValue(execute(n[0], x)) === getValue(execute(n[1], x));
         break;
 
-      case STRICT_NE:
+      case defs.STRICT_NE:
         v = getValue(execute(n[0], x)) !== getValue(execute(n[1], x));
         break;
 
-      case LT:
+      case defs.LT:
         v = getValue(execute(n[0], x)) < getValue(execute(n[1], x));
         break;
 
-      case LE:
+      case defs.LE:
         v = getValue(execute(n[0], x)) <= getValue(execute(n[1], x));
         break;
 
-      case GE:
+      case defs.GE:
         v = getValue(execute(n[0], x)) >= getValue(execute(n[1], x));
         break;
 
-      case GT:
+      case defs.GT:
         v = getValue(execute(n[0], x)) > getValue(execute(n[1], x));
         break;
 
-      case IN:
+      case defs.IN:
         v = getValue(execute(n[0], x)) in getValue(execute(n[1], x));
         break;
 
-      case INSTANCEOF:
+      case defs.INSTANCEOF:
         t = getValue(execute(n[0], x));
         u = getValue(execute(n[1], x));
         if (isObject(u) && typeof u.__hasInstance__ == "function")
@@ -569,106 +555,106 @@ function execute(n, x) {
             v = t instanceof u;
         break;
 
-      case LSH:
+      case defs.LSH:
         v = getValue(execute(n[0], x)) << getValue(execute(n[1], x));
         break;
 
-      case RSH:
+      case defs.RSH:
         v = getValue(execute(n[0], x)) >> getValue(execute(n[1], x));
         break;
 
-      case URSH:
+      case defs.URSH:
         v = getValue(execute(n[0], x)) >>> getValue(execute(n[1], x));
         break;
 
-      case PLUS:
+      case defs.PLUS:
         v = getValue(execute(n[0], x)) + getValue(execute(n[1], x));
         break;
 
-      case MINUS:
+      case defs.MINUS:
         v = getValue(execute(n[0], x)) - getValue(execute(n[1], x));
         break;
 
-      case MUL:
+      case defs.MUL:
         v = getValue(execute(n[0], x)) * getValue(execute(n[1], x));
         break;
 
-      case DIV:
+      case defs.DIV:
         v = getValue(execute(n[0], x)) / getValue(execute(n[1], x));
         break;
 
-      case MOD:
+      case defs.MOD:
         v = getValue(execute(n[0], x)) % getValue(execute(n[1], x));
         break;
 
-      case DELETE:
+      case defs.DELETE:
         t = execute(n[0], x);
         v = !(t instanceof Reference) || delete t.base[t.propertyName];
         break;
 
-      case VOID:
+      case defs.VOID:
         getValue(execute(n[0], x));
         break;
 
-      case TYPEOF:
+      case defs.TYPEOF:
         t = execute(n[0], x);
         if (t instanceof Reference)
             t = t.base ? t.base[t.propertyName] : undefined;
         v = typeof t;
         break;
 
-      case NOT:
+      case defs.NOT:
         v = !getValue(execute(n[0], x));
         break;
 
-      case BITWISE_NOT:
+      case defs.BITWISE_NOT:
         v = ~getValue(execute(n[0], x));
         break;
 
-      case UNARY_PLUS:
+      case defs.UNARY_PLUS:
         v = +getValue(execute(n[0], x));
         break;
 
-      case UNARY_MINUS:
+      case defs.UNARY_MINUS:
         v = -getValue(execute(n[0], x));
         break;
 
-      case INCREMENT:
-      case DECREMENT:
+      case defs.INCREMENT:
+      case defs.DECREMENT:
         t = execute(n[0], x);
         u = Number(getValue(t));
         if (n.postfix)
             v = u;
-        putValue(t, (n.type == INCREMENT) ? ++u : --u, n[0]);
+        putValue(t, (n.type == defs.INCREMENT) ? ++u : --u, n[0]);
         if (!n.postfix)
             v = u;
         break;
 
-      case DOT:
+      case defs.DOT:
         r = execute(n[0], x);
         t = getValue(r);
         u = n[1].value;
         v = new Reference(toObject(t, r, n[0]), u, n);
         break;
 
-      case INDEX:
+      case defs.INDEX:
         r = execute(n[0], x);
         t = getValue(r);
         u = getValue(execute(n[1], x));
         v = new Reference(toObject(t, r, n[0]), String(u), n);
         break;
 
-      case LIST:
+      case defs.LIST:
         // Curse ECMA for specifying that arguments is not an Array object!
         v = {};
         for (i = 0, j = n.length; i < j; i++) {
             u = getValue(execute(n[i], x));
-            v.__defineProperty__(i, u, false, false, true);
+            Object.defineProperty(v, i, {value: u /*, false, false, true*/});
         }
-        v.__defineProperty__('length', i, false, false, true);
+        Object.defineProperty(v, 'length', {value: i /*, false, false, true*/});
         break;
 
-      case CALL:
+      case defs.CALL:
         r = execute(n[0], x);
         a = execute(n[1], x);
         f = getValue(r);
@@ -682,13 +668,14 @@ function execute(n, x) {
         v = f.__call__(t, a, x);
         break;
 
-      case NEW:
-      case NEW_WITH_ARGS:
+      case defs.NEW:
+      case defs.NEW_WITH_ARGS:
         r = execute(n[0], x);
         f = getValue(r);
         if (n.type == NEW) {
             a = {};
-            a.__defineProperty__('length', 0, false, false, true);
+            Object.defineProperty(a, 'length', {
+                value: 0 /*, false, false, true*/});
         } else {
             a = execute(n[1], x);
         }
@@ -699,7 +686,7 @@ function execute(n, x) {
         v = f.__construct__(a, x);
         break;
 
-      case ARRAY_INIT:
+      case defs.ARRAY_INIT:
         v = [];
         for (i = 0, j = n.length; i < j; i++) {
             if (n[i])
@@ -708,38 +695,38 @@ function execute(n, x) {
         v.length = j;
         break;
 
-      case OBJECT_INIT:
+      case defs.OBJECT_INIT:
         v = {};
         for (i = 0, j = n.length; i < j; i++) {
             t = n[i];
-            if (t.type == PROPERTY_INIT) {
+            if (t.type == defs.PROPERTY_INIT) {
                 v[t[0].value] = getValue(execute(t[1], x));
             } else {
                 f = new FunctionObject(t, x.scope);
-                u = (t.type == GETTER) ? '__defineGetter__'
-                                       : '__defineSetter__';
+                u = (t.type == defs.GETTER) ? '__defineGetter__'
+                                              : '__defineSetter__';
                 v[u](t.name, thunk(f, x));
             }
         }
         break;
 
-      case NULL:
+      case defs.NULL:
         v = null;
         break;
 
-      case THIS:
+      case defs.THIS:
         v = x.thisObject;
         break;
 
-      case TRUE:
+      case defs.TRUE:
         v = true;
         break;
 
-      case FALSE:
+      case defs.FALSE:
         v = false;
         break;
 
-      case IDENTIFIER:
+      case defs.IDENTIFIER:
         for (s = x.scope; s; s = s.parent) {
             if (n.value in s.object)
                 break;
@@ -747,13 +734,13 @@ function execute(n, x) {
         v = new Reference(s && s.object, n.value, n);
         break;
 
-      case NUMBER:
-      case STRING:
-      case REGEXP:
+      case defs.NUMBER:
+      case defs.STRING:
+      case defs.REGEXP:
         v = n.value;
         break;
 
-      case GROUP:
+      case defs.GROUP:
         v = execute(n[0], x);
         break;
 
@@ -766,26 +753,28 @@ function execute(n, x) {
 
 function Activation(f, a) {
     for (var i = 0, j = f.params.length; i < j; i++)
-        this.__defineProperty__(f.params[i], a[i], true);
-    this.__defineProperty__('arguments', a, true);
+        Object.defineProperty(this, f.params[i], {value: a[i]/*, true*/});
+    Object.defineProperty(this, 'arguments', {value: a/*, true*/});
 }
 
 // Null Activation.prototype's proto slot so that Object.prototype.* does not
 // pollute the scope of heavyweight functions.  Also delete its 'constructor'
 // property so that it doesn't pollute function scopes.  But first, we must
-// copy __defineProperty__ down from Object.prototype.
+// copy defineProperty down from Object.prototype.
 
-Activation.prototype.__defineProperty__ = Object.prototype.__defineProperty__;
+Activation.prototype.defineProperty = Object.prototype.defineProperty;
 Activation.prototype.__proto__ = null;
 delete Activation.prototype.constructor;
 
 function FunctionObject(node, scope) {
     this.node = node;
     this.scope = scope;
-    this.__defineProperty__('length', node.params.length, true, true, true);
+    Object.defineProperty(this, 'length', {
+        value: node.params.length/*, true, true, true*/});
     var proto = {};
-    this.__defineProperty__('prototype', proto, true);
-    proto.__defineProperty__('constructor', this, false, false, true);
+    Object.defineProperty(this, 'prototype', {value: proto/*, true*/});
+    Object.defineProperty(proto, 'constructor', {
+        value: this/*, false, false, true*/});
 }
 
 var FOp = FunctionObject.prototype = {
@@ -795,18 +784,19 @@ var FOp = FunctionObject.prototype = {
         x2.thisObject = t || global;
         x2.caller = x;
         x2.callee = this;
-        a.__defineProperty__('callee', this, false, false, true);
+        Object.defineProperty(a, 'callee', {
+            value: this/*, false, false, true*/});
         var f = this.node;
         x2.scope = {object: new Activation(f, a), parent: this.scope};
 
         ExecutionContext.current = x2;
         try {
             execute(f.body, x2);
-        } catch (e if e == RETURN) {
+        } catch (e if e == defs.RETURN) {
             return x2.result;
-        } catch (e if e == THROW) {
+        } catch (e if e == defs.THROW) {
             x.result = x2.result;
-            throw THROW;
+            throw defs.THROW;
         } finally {
             ExecutionContext.current = x;
         }
@@ -862,12 +852,15 @@ var FOp = FunctionObject.prototype = {
 
         if (a === undefined || a === null) {
             a = {};
-            a.__defineProperty__('length', 0, false, false, true);
+            Object.defineProperty(a, 'length', {
+                value: 0/*, false, false, true*/});
         } else if (a instanceof Array) {
             var v = {};
             for (var i = 0, j = a.length; i < j; i++)
-                v.__defineProperty__(i, a[i], false, false, true);
-            v.__defineProperty__('length', i, false, false, true);
+                Object.defineProperty(v, i, {
+                    value: a[i]/*, false, false, true*/});
+            Object.defineProperty(v, 'length', {
+                value: i/*, false, false, true*/});
             a = v;
         } else if (!(a instanceof Object)) {
             // XXX check for a non-arguments object
@@ -894,35 +887,43 @@ var Fp = Function.prototype;
 var REp = RegExp.prototype;
 
 if (!('__call__' in Fp)) {
-    Fp.__defineProperty__('__call__', function (t, a, x) {
-        // Curse ECMA yet again!
-        a = Array.prototype.splice.call(a, 0, a.length);
-        return this.apply(t, a);
-    }, true, true, true);
+    Object.defineProperty(Fp, '__call__', {
+        value: function (t, a, x) {
+            // Curse ECMA yet again!
+            a = Array.prototype.splice.call(a, 0, a.length);
+            return this.apply(t, a);
+        } /*true, true, true*/});
 
-    REp.__defineProperty__('__call__', function (t, a, x) {
-        a = Array.prototype.splice.call(a, 0, a.length);
-        return this.exec.apply(this, a);
-    }, true, true, true);
+    Object.defineProperty(REp, '__call__', {
+        value: function (t, a, x) {
+            a = Array.prototype.splice.call(a, 0, a.length);
+            return this.exec.apply(this, a);
+        } /*true, true, true*/});
 
-    Fp.__defineProperty__('__construct__', function (a, x) {
-        a = Array.prototype.splice.call(a, 0, a.length);
-        return this.__applyConstructor__(a);
-    }, true, true, true);
+    Object.defineProperty(Fp, '__construct__', {
+        value: function (a, x) {
+            a = Array.prototype.splice.call(a, 0, a.length);
+            return this.__applyConstructor__(a);
+        } /*, true, true, true*/});
 
     // Since we use native functions such as Date along with host ones such
     // as global.eval, we want both to be considered instances of the native
     // Function constructor.
-    Fp.__defineProperty__('__hasInstance__', function (v) {
-        return v instanceof Function || v instanceof global.Function;
-    }, true, true, true);
+    Object.defineProperty(Fp, '__hasInstance__', {
+        value: function (v) {
+            return v instanceof Function || v instanceof global.Function;
+        }/*, true, true, true*/});
 }
 
 function thunk(f, x) {
     return function () { return f.__call__(this, arguments, x); };
 }
 
-function evaluate(s, f, l) {
+// Args:
+//   s: string to parse
+//   f: filename, defaults to ""
+//   l: line number, defaults to 1
+var evaluate = exports.evaluate = function(s, f, l) {
     if (typeof s != "string")
         return s;
 
@@ -930,11 +931,11 @@ function evaluate(s, f, l) {
     var x2 = new ExecutionContext(GLOBAL_CODE);
     ExecutionContext.current = x2;
     try {
-        execute(parse(s, f, l), x2);
-    } catch (e if e == THROW) {
+        execute(parse.parse(s, f, l), x2);
+    } catch (e if e == defs.THROW) {
         if (x) {
             x.result = x2.result;
-            throw THROW;
+            throw defs.THROW;
         }
         throw x2.result;
     } finally {
