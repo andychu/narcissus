@@ -48,6 +48,15 @@ exports.testSimpleCode = function() {
     var execResult = narcissus.evaluate(code);
 }
 
+exports.testFormat = function() {
+    var code = file.open('testdata/simple.js').read();
+    print(code);
+    var parseTree = narcissus.parse(code);
+    print("FORMAT");
+    print(narcissus.format(parseTree));
+    print("DONE FORMAT");
+}
+
 exports.testFunction = function() {
     // TODO: Make this work
     return;

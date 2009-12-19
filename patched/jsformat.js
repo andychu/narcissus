@@ -1,7 +1,4 @@
 
-var base = require('chiron/base');
-var defs = require('./defs');
-
 var lookup = function () {
 };
 
@@ -176,7 +173,8 @@ exports.format = function (node, scope, root) {
         return node.value;
 
     case defs.STRING:
-        return base.enquote(node.value, true);
+        // TODO: Proper formatting
+        return '"' + node.value + '"';
     case defs.REGEXP:
         return node.value;
     case defs.TRUE:
