@@ -931,7 +931,7 @@ var evaluate = exports.evaluate = function(s, f, l) {
     var x2 = new ExecutionContext(GLOBAL_CODE);
     ExecutionContext.current = x2;
     try {
-        execute(parse.parse(s, f, l), x2);
+        execute(parse(s, f, l), x2);
     } catch (e if e == defs.THROW) {
         if (x) {
             x.result = x2.result;

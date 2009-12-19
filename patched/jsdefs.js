@@ -19,25 +19,25 @@ var tokens = [
     "?", ":", "CONDITIONAL",
     "||",
     "&&",
-    "|",
+    "|",  // 10
     "^",
     "&",
     "==", "!=", "===", "!==",
-    "<", "<=", ">=", ">",
+    "<", "<=", ">=", ">",  // 17 18 19 20
     "<<", ">>", ">>>",
     "+", "-",
     "*", "/", "%",
-    "!", "~", "UNARY_PLUS", "UNARY_MINUS",
+    "!", "~", "UNARY_PLUS", "UNARY_MINUS",  // 29 30 31 32
     "++", "--",
     ".",
     "[", "]",
     "{", "}",
-    "(", ")",
+    "(", ")",  // 40 41
 
     // Nonterminal tree node type codes.
     "SCRIPT", "BLOCK", "LABEL", "FOR_IN", "CALL", "NEW_WITH_ARGS", "INDEX",
     "ARRAY_INIT", "OBJECT_INIT", "PROPERTY_INIT", "GETTER", "SETTER",
-    "GROUP", "LIST",
+    "GROUP", "LIST",  // 54 55
 
     // Terminals.
     "IDENTIFIER", "NUMBER", "STRING", "REGEXP",

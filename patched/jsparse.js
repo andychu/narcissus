@@ -4,6 +4,7 @@
  * Lexical scanner and parser.
  */
 
+
 var get = function (object, key, fallback) {
     if (Object.prototype.hasOwnProperty.call(object, key))
         return object[key];
@@ -12,7 +13,7 @@ var get = function (object, key, fallback) {
 
 // Build a regexp that recognizes operators and punctuators (except newline).
 var opRegExpSrc = "^";
-for (i in defs.opTypeNames) {
+for (i in opTypeNames) {
     if (i == '\n')
         continue;
     if (opRegExpSrc != "^")
@@ -59,7 +60,7 @@ Tokenizer.prototype = {
 
     mustMatch: function (tt) {
         if (!this.match(tt))
-            throw this.newSyntaxError("Missing " + defs.tokens[tt].toLowerCase());
+            throw this.newSyntaxError("Missing " + tokens[tt].toLowerCase());
         return this.token;
     },
 
@@ -132,7 +133,7 @@ Tokenizer.prototype = {
             token.value = parseInt(match[0]);
         } else if ((match = /^[$_\w]+/(input))) {       // FIXME no ES3 unicode
             var id = match[0];
-            token.type = get(defs.keywords, id, defs.IDENTIFIER);
+            token.type = get(keywords, id, defs.IDENTIFIER);
             token.value = id;
         } else if ((match = /^"(?:\\.|[^"])*"|^'(?:\\.|[^'])*'/(input))) { //"){
             token.type = defs.STRING;
@@ -142,12 +143,12 @@ Tokenizer.prototype = {
             token.value = new RegExp(match[1], match[2]);
         } else if ((match = opRegExp(input))) {
             var op = match[0];
-            if (defs.assignOps[op] && input[op.length] == '=') {
+            if (assignOps[op] && input[op.length] == '=') {
                 token.type = defs.ASSIGN;
-                token.assignOp = defs[defs.opTypeNames[op]];
+                token.assignOp = defs[opTypeNames[op]];
                 match[0] += '=';
             } else {
-                token.type = defs[defs.opTypeNames[op]];
+                token.type = defs[opTypeNames[op]];
                 if (this.scanOperand &&
                     (token.type == defs.PLUS || token.type == defs.MINUS)) {
                     token.type += defs.UNARY_PLUS - defs.PLUS;
@@ -239,8 +240,8 @@ Np.push = function (kid) {
 Node.indentLevel = 0;
 
 function tokenstr(tt) {
-    var t = defs.tokens[tt];
-    return /^\W/.test(t) ? defs.opTypeNames[t] : t.toUpperCase();
+    var t = tokens[tt];
+    return /^\W/.test(t) ? opTypeNames[t] : t.toUpperCase();
 }
 
 Np.toString = function () {
@@ -481,7 +482,7 @@ var Statement = exports.Statement = function Statement(t, x) {
 
       case defs.CATCH:
       case defs.FINALLY:
-        throw t.newSyntaxError(defs.tokens[tt] + " without preceding try");
+        throw t.newSyntaxError(tokens[tt] + " without preceding try");
 
       case defs.THROW:
         n = new Node(t);

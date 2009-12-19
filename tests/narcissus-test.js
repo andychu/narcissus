@@ -20,10 +20,6 @@ exports.testMain = function() {
 
     print("Done parsing");
 
-    //var parseTree = parse.parse("// hello");
-    //print(parseTree);
-    //print(format.format(parseTree));
-
     var execResult = narcissus.execute(
         parseTree, new narcissus.ExecutionContext(narcissus.GLOBAL_CODE));
     //print("execResult " + execResult);
@@ -38,8 +34,8 @@ exports.testMain = function() {
     parseTree = narcissus.parse(
         "function t() {print('in function t ***'); return true;}");
 
-    execResult = exec.execute(
-        parseTree, new narcissus.ExecutionContext(exec.EVAL_CODE));
+    execResult = narcissus.execute(
+        parseTree, new narcissus.ExecutionContext(narcissus.EVAL_CODE));
     print("execResult EVAL_CODE " + execResult);
 }
 
@@ -49,7 +45,7 @@ exports.testSimpleCode = function() {
     print(code);
     var parseTree = narcissus.parse(code);
     print("Done parsing");
-    var execResult = narcissus.evaluate(parseTree);
+    var execResult = narcissus.evaluate(code);
 }
 
 exports.testFunction = function() {
