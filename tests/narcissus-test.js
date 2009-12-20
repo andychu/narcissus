@@ -53,6 +53,10 @@ exports.testFormat = function() {
     var code = file.open('testdata/simple.js').read();
     print(code);
     var parseTree = narcissus.parse(code);
+
+    print("PARSED");
+    print(json.stringify(parseTree, null, 2));
+
     print("FORMAT");
     print(narcissus.format(parseTree));
     print("DONE FORMAT");
@@ -70,9 +74,9 @@ exports.testFunction = function() {
 
 exports.testParseRealCode = function() {
     var code = file.open('testdata/json-template.js').read();
+    return;
     var parseTree = narcissus.parse(code);
     print(json.stringify(parseTree, null, 2));
-    return;
     print("FORMAT");
     print(narcissus.format(parseTree));
     print("DONE FORMAT");

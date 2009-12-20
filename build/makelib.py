@@ -10,7 +10,6 @@ Run this script from the narcissus package root (the directory it lives in)
 __author__ = 'Andy Chu'
 
 
-import glob
 import sys
 
 import jsontemplate
@@ -43,9 +42,12 @@ _TEMPLATE = """\
 
 def main(argv):
   """Returns an exit code."""
-  filenames = glob.glob('patched/*.js')
-  if not filenames:
-    raise Error("No source files found, run from the narcissus package root")
+  filenames = [
+      'patched/jsdefs.js',
+      'patched/jsparse.js',
+      #'patched/jsexec.js',
+      #'patched/jsformat.js',
+      ]
 
   sources = []
   for name in filenames:
