@@ -238,7 +238,21 @@ Np.push = function (kid) {
 }
 
 Np.toJSON = function() {
-  return 'test json';
+  var jsonObj = {children: []};
+  for (var i = 0; i < this.length; i++) {
+    jsonObj.children.push(this[i]);
+  }
+  jsonObj.type = this.type;
+  jsonObj.value = this.value;
+  jsonObj.varDecls = this.varDecls;
+  jsonObj.funDecls = this.funDecls;
+  jsonObj.initializer = this.initializer;
+  jsonObj.start = this.start;
+  jsonObj.end = this.end;
+  jsonObj.filename = this.filename;
+  jsonObj.lineno = this.lineno;
+
+  return jsonObj;
 }
 
 Node.indentLevel = 0;

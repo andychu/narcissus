@@ -70,7 +70,7 @@ class SimpleTest(testy.Test):
     self.runner = os_process.Runner(cwd=PY_NARCISSUS_ROOT)
 
   def testVar(self):
-    self.verify.ParseTreeOfSnippet('var x=0;')
+    self.verify.ParseTreeOfSnippet('var x=99;')
 
   def testSmall(self):
     cmd = './jsparser.py tests/mjsunit/source/regress-1039610.js'

@@ -57,7 +57,14 @@ exports.main = function main(args) {
   if (flags.sexpr) {
     print(narcissus.sexpr(parseTree));
   } else if (flags.json) {
-    print(json.stringify(parseTree, null, 2));
+    var names = [
+        'type', 'value',
+        'varDecls', 'funDecls',
+        'initializer',
+        //'start', 'end',
+        //'filename', 'lineno',
+        'children'];
+    print(json.stringify(parseTree, names, 2));
   } else {
     print(parseTree.toString());
   }
