@@ -1,6 +1,34 @@
 #!/usr/bin/env narwhal
+
+// Narcissus JavaScript interpreter
+
+var args = require("args"),
+    file = require('file'),
+    os = require('os');
+
 var narcissus = require('narcissus');
-var file = require('file');
+
+var parser = new args.Parser();
+
+parser.usage('<file>')
+
+parser.help(
+    'Narcissus JavaScript interpreter\n' +
+    '\n'
+    );
+
+parser.option("-s", "--sexpr", "sexpr")
+    .help("Print parse tree in sexpr format")
+    .set(true);
+
+parser.option("-j", "--js", "js")
+    .help("Print parse tree in JS format")
+    .set(true);
+
+// A Perl convention
+parser.option("-e", "--expression", "expression")
+    .help("Inline JavaScript code")
+    .set();
 
 // TODO: Write a real main() function
 // narcissus.main(system.args);
@@ -8,11 +36,30 @@ var file = require('file');
 // For now, just print the parse tree of the file specified by the first
 // argument
 
-var js;
-if (system.args[1] === '-e') {
-  js = system.args[2];
-} else {
-  js = file.open(system.args[1]).read();
+
+exports.main = function main(args) {
+  var flags = parser.parse(args);
+
+  var js;
+  if (flags.expression) {
+    js = flags.expression;
+  } else if (flags.args[0]) {
+    js = file.open(flags.args[0]).read();
+  } else {
+    parser.printHelp();
+    os.exit();
+  }
+
+  print("PARSE TREE");
+
+  var parseTree = narcissus.parse(js);
+  if (flags.sexpr) {
+    print(narcissus.sexpr(parseTree));
+  } else {
+    print(narcissus.format(parseTree));
+  }
 }
-print("PARSE TREE");
-print(narcissus.format(narcissus.parse(js)));
+
+if (require.main == module.id) {
+  exports.main(system.args);
+}
