@@ -2,46 +2,58 @@
 var narcissus = require('narcissus');
 
 var file = require('file'),
+    os = require('os'),
     json = require('json');
 
+// Hack for v8
+var BASE_DIR = '/home/andy/git/narwhal2/packages/narcissus';
+
+function testFileContents(path) {
+  var absPath = file.join(BASE_DIR, path);
+  return file.open(absPath).read();
+}
+
 print("\n\n");
-print("DEFS");
+print("NARCISSUS");
 for (var name in narcissus) {
   print(name);
 }
 print("\n\n");
 
-exports.testMain = function() {
-    var code = "for (var i = 0; i < 10; i++) { print(i); }";
+var forLoop = "for (var i = 0; i < 10; i++) { print(i); }";
+
+exports.testLoopParse = function() {
 
     // Can parse JSON Template, but can't execute it yet.
     //var code = file.open('testdata/json-template.js').read();
-    print(code);
-    var parseTree = narcissus.parse(code);
+    print(forLoop);
+    var parseTree = narcissus.parse(forLoop);
 
     print("Done parsing");
 
-    var execResult = narcissus.execute(
-        parseTree, new narcissus.ExecutionContext(narcissus.GLOBAL_CODE));
-    //print("execResult " + execResult);
+    if (narcissus.execute) {
+      var execResult = narcissus.execute(
+          parseTree, new narcissus.ExecutionContext(narcissus.GLOBAL_CODE));
+      //print("execResult " + execResult);
 
-    parseTree = narcissus.parse("function t() {return true;}");
-    //print(parseTree);
+      parseTree = narcissus.parse("function t() {return true;}");
+      //print(parseTree);
 
-    execResult = narcissus.execute(
-        parseTree, new narcissus.ExecutionContext(narcissus.FUNCTION_CODE));
-    //print("execResult FUNCTION_CODE " + execResult);
+      execResult = narcissus.execute(
+          parseTree, new narcissus.ExecutionContext(narcissus.FUNCTION_CODE));
+      //print("execResult FUNCTION_CODE " + execResult);
 
-    parseTree = narcissus.parse(
-        "function t() {print('in function t ***'); return true;}");
+      parseTree = narcissus.parse(
+          "function t() {print('in function t ***'); return true;}");
 
-    execResult = narcissus.execute(
-        parseTree, new narcissus.ExecutionContext(narcissus.EVAL_CODE));
-    print("execResult EVAL_CODE " + execResult);
+      execResult = narcissus.execute(
+          parseTree, new narcissus.ExecutionContext(narcissus.EVAL_CODE));
+      print("execResult EVAL_CODE " + execResult);
+    }
 }
 
 exports.testSimpleCode = function() {
-    var code = file.open('testdata/simple.js').read();
+    var code = testFileContents('testdata/simple.js');
 
     print(code);
     var parseTree = narcissus.parse(code);
@@ -50,7 +62,7 @@ exports.testSimpleCode = function() {
 }
 
 exports.testFormat = function() {
-    var code = file.open('testdata/simple.js').read();
+    var code = testFileContents('testdata/simple.js');
     print(code);
     var parseTree = narcissus.parse(code);
 
@@ -65,7 +77,7 @@ exports.testFormat = function() {
 exports.testFunction = function() {
     // TODO: Make this work
     return;
-    var code = file.open('testdata/function.js').read();
+    var code = testFileContents('testdata/function.js');
 
     print(code);
     var result = narcissus.evaluate(code);
@@ -73,7 +85,7 @@ exports.testFunction = function() {
 }
 
 exports.testParseRealCode = function() {
-    var code = file.open('testdata/json-template.js').read();
+    var code = testFileContents('testdata/json-template.js');
     return;
     var parseTree = narcissus.parse(code);
     print(json.stringify(parseTree, null, 2));
