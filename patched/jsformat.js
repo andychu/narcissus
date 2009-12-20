@@ -190,3 +190,29 @@ exports.format = function (node, scope, root) {
     }
 };
 
+var sprintf = require('printf').sprintf;
+var printf = require('printf').printf;
+
+// Args:
+//   n: Node of the parse tree
+var sexpr = exports.sexpr = function(n, i) {
+
+  function props() {
+    return '<props>';  // placeholder
+  }
+
+  switch (n.type) {
+    case defs.SCRIPT:
+      //check(attrs=["funDecls","varDecls"], subnodes=len(n))
+      //print("WARNING: skipping funDecls and varDecls\n")
+      if (n.length > 0) {
+         return sprintf('(SCRIPT%s\n  ', props());
+            // + i + ("\n  "+i).join((sexpr(x,i+"  ",c) for x in n)) + ")")
+      }
+      return sprintf("(SCRIPT%s)", props());
+
+    default:
+      printf('Unknown node type "%s"', n.type);
+  }
+  return 'unknown';
+}
