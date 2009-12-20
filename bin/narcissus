@@ -55,8 +55,10 @@ exports.main = function main(args) {
   var parseTree = narcissus.parse(js);
   if (flags.sexpr) {
     print(narcissus.sexpr(parseTree));
-  } else {
+  } else if (flags.js) {
     print(narcissus.format(parseTree));
+  } else {
+    print(parseTree.toString());
   }
 }
 
