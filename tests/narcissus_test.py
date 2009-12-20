@@ -9,6 +9,7 @@ s-expressions on v8 testdata)
 __author__ = 'Andy Chu'
 
 
+import commands
 import os
 import sys
 
@@ -48,6 +49,18 @@ class JsVerifier(testy.StandardVerifier):
     js_out = js_out.split('PARSE TREE')[1].strip()
     print js_out
 
+  def ParseTreeOfSnippet(self, snippet):
+    cmd = './sexp.py'
+    p = self.py_runner.Pipes(cmd, 'IO')
+    py_out, _ = p.communicate(snippet)
+
+    js_cmd = "./nw.sh $PWD/bin/narcissus -e %s" % commands.mkarg(snippet)
+    js_out = self.js_runner.Result(js_cmd).stdout
+    # Hack to work around v8 spew
+    js_out = js_out.split('PARSE TREE')[1].strip()
+
+    self.LongStringsEqual(py_out, js_out)
+
 
 class SimpleTest(testy.Test):
 
@@ -55,6 +68,9 @@ class SimpleTest(testy.Test):
 
   def setUpOnce(self):
     self.runner = os_process.Runner(cwd=PY_NARCISSUS_ROOT)
+
+  def testVar(self):
+    self.verify.ParseTreeOfSnippet('var x=0;')
 
   def testSmall(self):
     cmd = './jsparser.py tests/mjsunit/source/regress-1039610.js'

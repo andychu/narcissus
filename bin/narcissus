@@ -7,6 +7,12 @@ var file = require('file');
 
 // For now, just print the parse tree of the file specified by the first
 // argument
-var js = file.open(system.args[1]).read();
+
+var js;
+if (system.args[1] === '-e') {
+  js = system.args[2];
+} else {
+  js = file.open(system.args[1]).read();
+}
 print("PARSE TREE");
 print(narcissus.format(narcissus.parse(js)));
