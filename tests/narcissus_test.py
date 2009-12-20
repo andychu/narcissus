@@ -54,7 +54,7 @@ class JsVerifier(testy.StandardVerifier):
     p = self.py_runner.Pipes(cmd, 'IO')
     py_out, _ = p.communicate(snippet)
 
-    js_cmd = "./nw.sh $PWD/bin/narcissus -s -e %s" % commands.mkarg(snippet)
+    js_cmd = "./nw.sh $PWD/bin/narcissus -j -e %s" % commands.mkarg(snippet)
     js_out = self.js_runner.Result(js_cmd).stdout
     # Hack to work around v8 spew
     js_out = js_out.split('PARSE TREE')[1].strip()

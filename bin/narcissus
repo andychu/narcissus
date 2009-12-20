@@ -4,6 +4,7 @@
 
 var args = require("args"),
     file = require('file'),
+    json = require('json'),
     os = require('os');
 
 var narcissus = require('narcissus');
@@ -21,8 +22,8 @@ parser.option("-s", "--sexpr", "sexpr")
     .help("Print parse tree in sexpr format")
     .set(true);
 
-parser.option("-j", "--js", "js")
-    .help("Print parse tree in JS format")
+parser.option("-j", "--json", "json")
+    .help("Print parse tree in JSON format")
     .set(true);
 
 // A Perl convention
@@ -55,8 +56,8 @@ exports.main = function main(args) {
   var parseTree = narcissus.parse(js);
   if (flags.sexpr) {
     print(narcissus.sexpr(parseTree));
-  } else if (flags.js) {
-    print(narcissus.format(parseTree));
+  } else if (flags.json) {
+    print(json.stringify(parseTree, null, 2));
   } else {
     print(parseTree.toString());
   }

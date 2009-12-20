@@ -237,6 +237,10 @@ Np.push = function (kid) {
     return Array.prototype.push.call(this, kid);
 }
 
+Np.toJSON = function() {
+  return 'test json';
+}
+
 Node.indentLevel = 0;
 
 function tokenstr(tt) {
