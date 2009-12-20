@@ -1,2 +1,11 @@
 #!/usr/bin/env narwhal
-require('narcissus').main(system.args);
+var narcissus = require('narcissus');
+var file = require('file');
+
+// TODO: Write a real main() function
+// narcissus.main(system.args);
+
+// For now, just print the parse tree of the file specified by the first
+// argument
+var js = file.open(system.args[1]).read();
+print(narcissus.parse(js));
