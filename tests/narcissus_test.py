@@ -44,6 +44,8 @@ class JsVerifier(testy.StandardVerifier):
 
     js_cmd = './nw.sh $PWD/bin/narcissus %s' % self._TestPath(test_file)
     js_out = self.js_runner.Result(js_cmd).stdout
+    # Hack to work around v8 spew
+    js_out = js_out.split('PARSE TREE')[1].strip()
     print js_out
 
 
