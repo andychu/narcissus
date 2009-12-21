@@ -238,8 +238,11 @@ Np.push = function (kid) {
 }
 
 Np.toJSON = function() {
-  var jsonObj = {children: []};
+  var jsonObj = {};
   for (var i = 0; i < this.length; i++) {
+    if (i === 0) {
+      jsonObj.children = [];  // only initialize if we have at least 1
+    }
     jsonObj.children.push(this[i]);
   }
   /*
