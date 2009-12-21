@@ -266,6 +266,10 @@ Np.toJSON = function() {
       continue;
     if (name === 'tokenizer')  // not part of parse tree
       continue;
+    if (name === 'type') {
+      jsonObj.type = tokens[this.type];
+      continue;
+    }
     jsonObj[name] = this[name];
   }
 
