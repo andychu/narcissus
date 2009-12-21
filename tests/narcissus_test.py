@@ -10,6 +10,7 @@ __author__ = 'Andy Chu'
 
 
 import commands
+import glob
 import os
 import sys
 
@@ -86,6 +87,22 @@ class SimpleTest(testy.Test):
 
   def testSmallExample(self):
     self.verify.ParseTree('tests/mjsunit/source/regress-1039610.js')
+
+  def testParsingAll(self):
+    test_files = glob.glob(
+        os.path.join(PY_NARCISSUS_ROOT, 'tests/mjsunit/source/*.js'))
+    runner = os_process.Runner()
+    for test_file in test_files:
+      print test_file
+      # TODO: output JSON, and parse it, count nodes, etc.
+      js_cmd = './nw.sh $PWD/bin/narcissus %s' % test_file
+      js_out = runner.Result(js_cmd).stdout
+      # Hack to work around v8 spew
+      js_out = js_out.split('PARSE TREE')[1].strip()
+      print len(js_out)
+      self.verify.IsTrue(len(js_out) > 20, js_out)
+
+    print '%s test files' % len(test_files)
 
 
 if __name__ == '__main__':
