@@ -242,15 +242,32 @@ Np.toJSON = function() {
   for (var i = 0; i < this.length; i++) {
     jsonObj.children.push(this[i]);
   }
+  /*
   jsonObj.type = this.type;
   jsonObj.value = this.value;
+
   jsonObj.varDecls = this.varDecls;
   jsonObj.funDecls = this.funDecls;
+
   jsonObj.initializer = this.initializer;
+
   jsonObj.start = this.start;
   jsonObj.end = this.end;
   jsonObj.filename = this.filename;
   jsonObj.lineno = this.lineno;
+  */
+  for (var name in this) {
+    if (!this.hasOwnProperty(name))
+      continue;
+    // Nodes are Arrays, but they also have attributes.  I want to iterate over
+    // all the attributes, but not get "0", "1", etc., so do this parseInt hack.
+    // NaN is not >= 0.
+    if (parseInt(name) >= 0)
+      continue;
+    if (name === 'tokenizer')  // not part of parse tree
+      continue;
+    jsonObj[name] = this[name];
+  }
 
   return jsonObj;
 }

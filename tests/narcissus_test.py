@@ -72,6 +72,10 @@ class SimpleTest(testy.Test):
   def testVar(self):
     self.verify.ParseTreeOfSnippet('var x=99;')
 
+  def testLoop(self):
+    self.verify.ParseTreeOfSnippet(
+        'for (var i=0; i<10; i++) { print(i); }')
+
   def testSmall(self):
     cmd = './jsparser.py tests/mjsunit/source/regress-1039610.js'
     print self.runner.Result(cmd).stdout

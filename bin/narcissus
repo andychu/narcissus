@@ -61,10 +61,17 @@ exports.main = function main(args) {
         'type', 'value',
         'varDecls', 'funDecls',
         'initializer',
+        'body',
+        'setup',
+        'condition',
+        'update',
+        'isLoop',
         //'start', 'end',
         //'filename', 'lineno',
         'children'];
-    print(json.stringify(parseTree, names, 2));
+    //print(json.stringify(parseTree, names, 2));
+
+    print(json.stringify(parseTree, null, 2));
   } else {
     print(parseTree.toString());
   }
