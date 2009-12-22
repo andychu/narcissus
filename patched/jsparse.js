@@ -194,6 +194,7 @@ var CCp = CompilerContext.prototype;
 CCp.bracketLevel = CCp.curlyLevel = CCp.parenLevel = CCp.hookLevel = 0;
 CCp.ecmaStrictMode = CCp.inForLoopInit = false;
 
+// t, x: Tokenizer, CompilerContext
 var Script = exports.Script = function Script(t, x) {
     var n = Statements(t, x);
     n.type = defs.SCRIPT;
@@ -237,27 +238,17 @@ Np.push = function (kid) {
     return Array.prototype.push.call(this, kid);
 }
 
-Np.toJSON = function() {
+Np.toJSON = function(key) {
+  //print('key ' + key);
+  //print('toJSON ' + tj++ + ' ' + this.type + ' ' + this.name + ' ' + this.value);
   var jsonObj = {};
+  /*
   for (var i = 0; i < this.length; i++) {
     if (i === 0) {
       jsonObj.children = [];  // only initialize if we have at least 1
     }
     jsonObj.children.push(this[i]);
   }
-  /*
-  jsonObj.type = this.type;
-  jsonObj.value = this.value;
-
-  jsonObj.varDecls = this.varDecls;
-  jsonObj.funDecls = this.funDecls;
-
-  jsonObj.initializer = this.initializer;
-
-  jsonObj.start = this.start;
-  jsonObj.end = this.end;
-  jsonObj.filename = this.filename;
-  jsonObj.lineno = this.lineno;
   */
   for (var name in this) {
     if (!this.hasOwnProperty(name))
@@ -265,14 +256,23 @@ Np.toJSON = function() {
     // Nodes are Arrays, but they also have attributes.  I want to iterate over
     // all the attributes, but not get "0", "1", etc., so do this parseInt hack.
     // NaN is not >= 0.
-    if (parseInt(name) >= 0)
-      continue;
+    //if (parseInt(name) >= 0)
+    //  continue;
     if (name === 'tokenizer')  // not part of parse tree
       continue;
     if (name === 'start' || name === 'end' || name == 'lineno')
       continue;  // don't need these most of the time
     if (name === 'length')
       continue;  // don't need length in JSON
+    if (name === 'varDecls' || name === 'funDecls')
+      continue;  // generally redundant with what's already in the tree
+
+    // When printing JSON, the 'target' attr for BREAK or CONTINUE is a code
+    // object, which causes an infinite loop
+    if (name === 'target') {
+      continue;
+    }
+
     if (name === 'type') {
       jsonObj.type = tokens[this.type];
       continue;
@@ -331,6 +331,7 @@ function nest(t, x, node, func, end) {
     return n;
 }
 
+// t, x: Tokenizer, CompilerContext
 var Statements = exports.Statements = function Statements(t, x) {
     var n = new Node(t, defs.BLOCK);
     x.stmtStack.push(n);
@@ -341,6 +342,7 @@ var Statements = exports.Statements = function Statements(t, x) {
     return n;
 }
 
+// t, x: Tokenizer, CompilerContext
 var Block = exports.Block = function Block(t, x) {
     t.mustMatch(defs.LEFT_CURLY);
     var n = Statements(t, x);

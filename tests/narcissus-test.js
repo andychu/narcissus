@@ -86,12 +86,18 @@ exports.testFunction = function() {
 
 exports.testParseRealCode = function() {
     var code = testFileContents('testdata/json-template.js');
-    return;
     var parseTree = narcissus.parse(code);
+    return;
     print(json.stringify(parseTree, null, 2));
     print("FORMAT");
     print(narcissus.format(parseTree));
     print("DONE FORMAT");
+}
+
+exports.testBreak = function() {
+    var code = testFileContents('testdata/break.js');
+    var parseTree = narcissus.parse(code);
+    print(json.stringify(parseTree, null, 2));
 }
 
 if (require.main === module.id)
