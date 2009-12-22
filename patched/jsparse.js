@@ -269,6 +269,10 @@ Np.toJSON = function() {
       continue;
     if (name === 'tokenizer')  // not part of parse tree
       continue;
+    if (name === 'start' || name === 'end' || name == 'lineno')
+      continue;  // don't need these most of the time
+    if (name === 'length')
+      continue;  // don't need length in JSON
     if (name === 'type') {
       jsonObj.type = tokens[this.type];
       continue;
