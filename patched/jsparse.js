@@ -241,23 +241,41 @@ Np.push = function (kid) {
 Np.toJSON = function(key) {
   //print('key ' + key);
   //print('toJSON ' + tj++ + ' ' + this.type + ' ' + this.name + ' ' + this.value);
-  var jsonObj = {};
-  /*
-  for (var i = 0; i < this.length; i++) {
-    if (i === 0) {
-      jsonObj.children = [];  // only initialize if we have at least 1
-    }
-    jsonObj.children.push(this[i]);
+  var jsonObj = {},
+      transformed = false;  // whether we fixed up JSON in this Node
+
+  // Variable number of elements: put them under a "children" array
+  switch (this.type) {
+    case defs.SCRIPT:
+    case defs.BLOCK:
+    case defs.VAR:
+      transformed = true;
+      for (var i = 0; i < this.length; i++) {
+        if (i === 0) {
+          jsonObj.children = [];  // only initialize if we have at least 1
+        }
+        jsonObj.children.push(this[i]);
+      }
+      break;
   }
-  */
+
+  // Constant number of elements: 0 -> a, 1 -> b, etc.
+  var arity = opArity[this.type];
+  if (1 <= arity && arity <= 3) {  // 1, 2, 3
+    jsonObj.a = this[0];
+    jsonObj.b = this[1];
+    jsonObj.c = this[2];  // any of these may be undefined
+    transformed = true;
+  }
+
   for (var name in this) {
     if (!this.hasOwnProperty(name))
       continue;
     // Nodes are Arrays, but they also have attributes.  I want to iterate over
     // all the attributes, but not get "0", "1", etc., so do this parseInt hack.
     // NaN is not >= 0.
-    //if (parseInt(name) >= 0)
-    //  continue;
+    if (transformed && parseInt(name) >= 0)
+      continue;
     if (name === 'tokenizer')  // not part of parse tree
       continue;
     if (name === 'start' || name === 'end' || name == 'lineno')
