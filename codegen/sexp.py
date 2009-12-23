@@ -30,7 +30,10 @@ class Error(Exception):
 class NodePredicates(jsontemplate.FunctionRegistry):
   def Lookup(self, user_str):
     """The node type is also a predicate."""
-    func = lambda v, context, args: (v['type'] == user_str)
+    def func(v, context, args):
+      print v['type'], '==', user_str
+      print v['type']== user_str
+      return v['type'] == user_str
     return func, None  # No arguments
 
 node_predicates = NodePredicates()
@@ -61,16 +64,43 @@ func = jsontemplate.Template(
 
 script = jsontemplate.Template(
     B("""
-    {.repeated section children}
-    {@|template statement}
-    {.end}
     """))
 
 statement = jsontemplate.Template(
     B("""
-    {.if for}
-    for (;;) {
+    {.if SCRIPT}
+      {.repeated section children}
+      {@|template SELF}
+      {.end}
+    {.or BLOCK}
+      {.repeated section children}
+      {@|template SELF}
+      {.end}
+    {.or for}
+    for ({setup|template SELF};{condition|template SELF};{update|template SELF) {
+      {body|template SELF}
     }
+    {.or var}
+      var {.repeated section children}
+            {.section initializer}
+              {name} = {@|template SELF}
+            {.or}
+              {name}
+            {.end}
+          {.alternates with},
+          {.end};
+    {.or <}
+      {a|template SELF} < {b|template SELF}
+    {.or ++}
+      {.if postfix}
+        {value}++
+      {.or}
+        ++{value}
+      {.end}
+    {.or IDENTIFIER}
+      {value}
+    {.or NUMBER}
+      {value}
     {.end}
     """), more_predicates=node_predicates)
 
@@ -83,7 +113,7 @@ def main(argv):
 
   jsontemplate.MakeTemplateGroup(
       {'func': func, 'expr': expr, 'script': script, 'statement': statement})
-  print script.expand(parse_tree)
+  print statement.expand(parse_tree)
   return 0
 
 
