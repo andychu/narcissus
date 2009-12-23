@@ -120,9 +120,8 @@ for (var i = 0, j = tokens.length; i < j; i++) {
 }
 
 // Map assignment operators to their indexes in the tokens array.
-var assignOps = assignOps = [
-    '|', '^', '&', '<<', '>>', '>>>', '+', '-', '*', '/', '%'
-];
+var assignOps = ['|', '^', '&', '<<', '>>', '>>>', '+', '-', '*', '/', '%'];
+
 for (i = 0, j = assignOps.length; i < j; i++) {
     t = assignOps[i];
     assignOps[t] = tokens[t];
