@@ -33,7 +33,7 @@ __all__ = [
     'BadPredicate', 'MissingFormatter', 'ConfigurationError',
     'TemplateSyntaxError', 'UndefinedVariable',
     # API
-    'CompileTemplate', 'FromString', 'FromFile', 'Template', 'expand',
+    'FromString', 'FromFile', 'Template', 'expand',
     # Function API
     'SIMPLE_FUNC', 'ENHANCED_FUNC']
 
@@ -223,11 +223,11 @@ class _ProgramBuilder(object):
   instances.
   """
 
-  def __init__(self, formatters, predicates):
+  def __init__(self, formatters, predicates, template_formatter):
     """
     Args:
-      formatters: See docstring for CompileTemplate
-      predicates: See docstring for CompileTemplate
+      formatters: See docstring for _CompileTemplate
+      predicates: See docstring for _CompileTemplate
     """
     self.current_block = _Section()
     self.stack = [self.current_block]
@@ -241,7 +241,9 @@ class _ProgramBuilder(object):
 
     # default formatters with arguments
     default_formatters = PrefixRegistry([
-        ('pluralize', _Pluralize), ('cycle', _Cycle)
+        ('template', template_formatter),
+        ('pluralize', _Pluralize),
+        ('cycle', _Cycle),
         ])
 
     # First consult user formatters, then the default formatters
@@ -639,6 +641,46 @@ def _Cycle(value, unused_context, args):
   return args[(value - 1) % len(args)]
 
 
+class _TemplateFormatter(object):
+  """Formatter that uses *templates* to format values.
+  
+  Templates are formatters!  See the "On Design Minimalism" JSON Template
+  article.
+
+  A template can recursively call itself by using the special 'SELF' name.
+  """
+  def __init__(self, owner):
+    """
+    Args:
+      owner: The Template instance that owns this formatter.  (There should be
+      exactly one)
+    """
+    self.owner = owner
+    self.group = {}
+
+  def RegisterGroup(self, group):
+    """
+    Args:
+      group: dictionary of template name -> compiled Template instance
+    """
+    self.group = group
+  
+  def __call__(self, value, context, args):
+    """Called with args[0] as the template name."""
+    name = args[0]
+
+    if name == 'SELF':
+      return self.owner.expand(context.Lookup('@'))
+
+    t = self.group.get(name)
+    if t:
+      return t.expand(context.Lookup('@'))
+    else:
+      raise EvaluationError(
+          "Couldn't find template with name %r (create a template group?)"
+          % name)
+
+
 def _IsDebugMode(unused_value, context, unused_args):
   try:
     return bool(context.Lookup('debug'))
@@ -811,10 +853,8 @@ def _Tokenize(template_str, meta_left, meta_right):
           yield SUBSTITUTION_TOKEN, token
 
 
-def CompileTemplate(
-    template_str, builder=None, meta='{}', format_char='|',
-    more_formatters=lambda x: None, more_predicates=lambda x: None,
-    default_formatter='str'):
+def _CompileTemplate(
+    template_str, builder, meta='{}', format_char='|', default_formatter='str'):
   """Compile the template string, calling methods on the 'program builder'.
 
   Args:
@@ -825,18 +865,6 @@ def CompileTemplate(
         risk.
 
     meta: The metacharacters to use, e.g. '{}', '[]'.
-
-    more_formatters:
-        Something that can map format strings to formatter functions.  One of:
-          - A plain dictionary of names -> functions  e.g. {'html': cgi.escape}
-          - A higher-order function which takes format strings and returns
-            formatter functions.  Useful for when formatters have parsed
-            arguments.
-          - A FunctionRegistry instance for the most control.  This allows
-            formatters which takes contexts as well.
-
-    more_predicates:
-        Like more_formatters, but for predicates.
 
     default_formatter: The formatter to use for substitutions that are missing a
         formatter.  The 'str' formatter the "default default" -- it just tries
@@ -853,7 +881,6 @@ def CompileTemplate(
   This function is public so it can be used by other tools, e.g. a syntax
   checking tool run before submitting a template to source control.
   """
-  builder = builder or _ProgramBuilder(more_formatters, more_predicates)
   meta_left, meta_right = SplitMeta(meta)
 
   # : is meant to look like Python 3000 formatting {foo:.3f}.  According to
@@ -1008,17 +1035,33 @@ class Template(object):
   you can compile the templates once at server startup, and use the expand()
   method at request handling time.  expand() uses the compiled representation.
 
-  There are various options for controlling parsing -- see CompileTemplate.
+  There are various options for controlling parsing -- see _CompileTemplate.
   Don't go crazy with metacharacters.  {}, [], {{}} or <> should cover nearly
   any circumstance, e.g. generating HTML, CSS XML, JavaScript, C programs, text
   files, etc.
   """
 
-  def __init__(self, template_str, builder=None, undefined_str=None,
+  def __init__(self, template_str,
+               more_formatters=lambda x: None,
+               more_predicates=lambda x: None, 
+               undefined_str=None,
                **compile_options):
     """
     Args:
       template_str: The template string.
+
+      more_formatters:
+          Something that can map format strings to formatter functions.  One of:
+          - A plain dictionary of names -> functions  e.g. {'html': cgi.escape}
+          - A higher-order function which takes format strings and returns
+            formatter functions.  Useful for when formatters have parsed
+            arguments.
+          - A FunctionRegistry instance, giving the most control.  This allows
+            formatters which takes contexts as well.
+
+      more_predicates:
+          Like more_formatters, but for predicates.
+
       undefined_str: A string to appear in the output when a variable to be
           substituted is missing.  If None, UndefinedVariable is raised.
           (Note: This is not really a compilation option, because affects
@@ -1026,11 +1069,21 @@ class Template(object):
           constructor argument rather than an .expand() argument for
           simplicity.)
 
-    It also accepts all the compile options that CompileTemplate does.
+    It also accepts all the compile options that _CompileTemplate does.
     """
-    self._program = CompileTemplate(
-        template_str, builder=builder, **compile_options)
+    self.template_formatter = _TemplateFormatter(self)
+    builder = _ProgramBuilder(more_formatters, more_predicates,
+                              self.template_formatter)
+    self._program = _CompileTemplate(template_str, builder, **compile_options)
     self.undefined_str = undefined_str
+
+  def _RegisterGroup(self, group):
+    """Allow this template to reference templates in the group via formatters.
+
+    Args:
+      group: dictionary of template name -> compiled Template instance
+    """
+    self.template_formatter.RegisterGroup(group) 
 
   #
   # Public API
@@ -1090,6 +1143,25 @@ class Template(object):
     self.render(data_dict, tokens.append)
     for token in tokens:
       yield token
+
+
+def MakeTemplateGroup(group):
+  """Wire templates together so that they can reference each other by name.
+
+  The templates becomes formatters with the 'template' prefix.  For example:
+  {var|template NAME} formats the node 'var' with the template 'NAME'
+
+  Templates may be mutually recursive.
+
+  This function *mutates* all the templates, so you shouldn't call it multiple
+  times on a single Template() instance.  It's possible to put a single template
+  in multiple groups by creating multiple Template() instances from it.
+  
+  Args:
+    group: dictionary of template name -> compiled Template instance
+  """
+  for t in group.itervalues():
+    t._RegisterGroup(group)
 
 
 def _DoRepeatedSection(args, context, callback):

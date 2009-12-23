@@ -1,0 +1,145 @@
+{
+  "children": [
+    {
+      "type": "for",
+      "value": "for",
+      "isLoop": true,
+      "setup": {
+        "children": [
+          {
+            "type": "IDENTIFIER",
+            "value": "i",
+            "name": "i",
+            "initializer": {
+              "type": "NUMBER",
+              "value": 0
+            },
+            "readOnly": false
+          }
+        ],
+        "type": "var",
+        "value": "var"
+      },
+      "condition": {
+        "a": {
+          "type": "IDENTIFIER",
+          "value": "i"
+        },
+        "b": {
+          "type": "NUMBER",
+          "value": 10
+        },
+        "type": "<",
+        "value": "<"
+      },
+      "update": {
+        "a": {
+          "type": "IDENTIFIER",
+          "value": "i"
+        },
+        "type": "++",
+        "value": "++",
+        "postfix": true
+      },
+      "body": {
+        "children": [
+          {
+            "type": "if",
+            "value": "if",
+            "condition": {
+              "a": {
+                "a": {
+                  "type": "IDENTIFIER",
+                  "value": "i"
+                },
+                "b": {
+                  "type": "NUMBER",
+                  "value": 2
+                },
+                "type": "%",
+                "value": "%"
+              },
+              "b": {
+                "type": "NUMBER",
+                "value": 0
+              },
+              "type": "===",
+              "value": "==="
+            },
+            "thenPart": {
+              "children": [
+                {
+                  "type": ";",
+                  "value": "print",
+                  "expression": {
+                    "a": {
+                      "type": "IDENTIFIER",
+                      "value": "print"
+                    },
+                    "b": {
+                      "0": {
+                        "a": {
+                          "type": "STRING",
+                          "value": "even "
+                        },
+                        "b": {
+                          "type": "IDENTIFIER",
+                          "value": "i"
+                        },
+                        "type": "+",
+                        "value": "+"
+                      },
+                      "type": "LIST",
+                      "value": ")"
+                    },
+                    "type": "CALL",
+                    "value": "("
+                  }
+                }
+              ],
+              "type": "BLOCK",
+              "value": "{"
+            },
+            "elsePart": {
+              "children": [
+                {
+                  "type": ";",
+                  "value": "print",
+                  "expression": {
+                    "a": {
+                      "type": "IDENTIFIER",
+                      "value": "print"
+                    },
+                    "b": {
+                      "0": {
+                        "a": {
+                          "type": "STRING",
+                          "value": "odd "
+                        },
+                        "b": {
+                          "type": "IDENTIFIER",
+                          "value": "i"
+                        },
+                        "type": "+",
+                        "value": "+"
+                      },
+                      "type": "LIST",
+                      "value": ")"
+                    },
+                    "type": "CALL",
+                    "value": "("
+                  }
+                }
+              ],
+              "type": "BLOCK",
+              "value": "{"
+            }
+          }
+        ],
+        "type": "BLOCK",
+        "value": "{"
+      }
+    }
+  ],
+  "type": "SCRIPT"
+}
