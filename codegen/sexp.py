@@ -18,10 +18,61 @@ import jsontemplate
 # HACK
 sys.path.append('/home/andy/svn/pan/trunk')
 from pan.core import json
+from pan.core import util
+
+B = util.BlockStr
 
 
 class Error(Exception):
   pass
+
+
+class NodePredicates(jsontemplate.FunctionRegistry):
+  def Lookup(self, user_str):
+    """The node type is also a predicate."""
+    func = lambda v, context, args: (v['type'] == user_str)
+    return func, None  # No arguments
+
+node_predicates = NodePredicates()
+
+expr = jsontemplate.Template(
+    B("""
+    {.if PLUS}
+    {a} + {b}
+    {.or MINUS}
+    {a} - {b}
+    {.or MULT}
+    {a} * {b}
+    {.or DIV}
+    {a} / {b}
+    {.or FUNC}
+    {@|template func}
+    {.end}
+    """), more_predicates=node_predicates)
+
+func = jsontemplate.Template(
+    B("""
+    function ({.repeated section params}{@} {.end}) {
+      {.repeated section exprs}
+      {@|template expr}
+      {.end}
+    }
+    """))
+
+script = jsontemplate.Template(
+    B("""
+    {.repeated section children}
+    {@|template statement}
+    {.end}
+    """))
+
+statement = jsontemplate.Template(
+    B("""
+    {.if for}
+    for (;;) {
+    }
+    {.end}
+    """), more_predicates=node_predicates)
 
 
 def main(argv):
@@ -29,7 +80,10 @@ def main(argv):
 
   filename = os.path.join(this_dir, 'loop.json')
   parse_tree = json.loads(open(filename).read())
-  print parse_tree
+
+  jsontemplate.MakeTemplateGroup(
+      {'func': func, 'expr': expr, 'script': script, 'statement': statement})
+  print script.expand(parse_tree)
   return 0
 
 
