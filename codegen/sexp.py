@@ -77,7 +77,7 @@ statement = jsontemplate.Template(
       {@|template SELF}
       {.end}
     {.or for}
-    for ({setup|template SELF};{condition|template SELF};{update|template SELF) {
+    for ({setup|template SELF};{condition|template SELF};{update|template SELF}) {
       {body|template SELF}
     }
     {.or var}
@@ -93,9 +93,9 @@ statement = jsontemplate.Template(
       {a|template SELF} < {b|template SELF}
     {.or ++}
       {.if postfix}
-        {value}++
+        {a|template SELF}++
       {.or}
-        ++{value}
+        ++{a|template SELF}
       {.end}
     {.or IDENTIFIER}
       {value}
