@@ -10,6 +10,7 @@ __author__ = 'Andy Chu'
 
 
 import os
+import pprint
 import sys
 import traceback
 
@@ -48,7 +49,7 @@ class NodePredicates(jsontemplate.FunctionRegistry):
 node_predicates = NodePredicates()
 
 def Fail(value):
-  raise RuntimeError('Unknown type for %r' % value)
+  raise RuntimeError('Unknown type for %s' % pprint.pformat(value))
 
 
 statement = jsontemplate.Template(
@@ -76,6 +77,12 @@ statement = jsontemplate.Template(
       {body|template SELF}
     } {.newline}
 
+    {.or while}
+    while ({condition|template SELF}) {#}
+    {
+      {body|template SELF}
+    } {.newline}
+
     {.or if}
       if ({condition|template SELF}) {.meta-left}{.newline}
         {thenPart|template SELF}{.newline}
@@ -99,6 +106,22 @@ statement = jsontemplate.Template(
     {.or default}
       default: {.newline}
         {statements|template SELF}
+
+    {.or try}
+    try {.meta-left} {
+      {tryBlock|template SELF}
+    }
+    {.section catchClauses}
+      {.repeated section @}
+        catch {
+          {@|template SELF}
+        }
+      {.end}
+    {.end}
+    {# TODO: finally clause}
+
+    {.or catch}
+      {block|template SELF}
 
     {.or var}
       var {.repeated section children}
@@ -149,12 +172,20 @@ statement = jsontemplate.Template(
       {a|template SELF} + {b|template SELF}
     {.or -}
       {a|template SELF} - {b|template SELF}
+    {.or *}
+      {a|template SELF} * {b|template SELF}
+    {.or /}
+      {a|template SELF} / {b|template SELF}
     {.or %}
       {a|template SELF} % {b|template SELF}
     {.or ===}
       {a|template SELF} === {b|template SELF}
+    {.or !==}
+      {a|template SELF} !== {b|template SELF}
     {.or ==}
       {a|template SELF} == {b|template SELF}
+    {.or !=}
+      {a|template SELF} != {b|template SELF}
     {.or ||}
       {a|template SELF} || {b|template SELF}
     {.or &&}
@@ -192,6 +223,9 @@ statement = jsontemplate.Template(
     {.or UNARY_PLUS};
       +{a|template SELF}
 
+    {.or !};
+      !{a|template SELF}
+
     {.or return}
       return {value|template SELF};
 
@@ -214,8 +248,16 @@ statement = jsontemplate.Template(
 
     {.or NEW_WITH_ARGS}
       new {a|template SELF}({b|template SELF});
+
+    {.or new}
+      new {a|template SELF}
+
     {.or throw}
       throw {exception|template SELF};{.newline}
+    {.or typeof}
+      typeof {a|template SELF}
+    {.or instanceof}
+      instanceof {a|template SELF}
     {.or break}
       break;
     {.or continue}
@@ -235,6 +277,12 @@ statement = jsontemplate.Template(
 
     {.or null}
       null
+    {.or false}
+      false
+    {.or true}
+      true
+    {.or this}
+      this
     {.or}
       {@|fail}
     {.end}
