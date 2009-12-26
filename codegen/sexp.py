@@ -68,22 +68,52 @@ statement = jsontemplate.Template(
             {.end}
           {.alternates with},
           {.end};
+    {.or ;}  {# statement}
+      {expression|template SELF};
+    {.or CALL}
+      {a|template SELF}({b|template SELF})
+    {.or LIST}  {# e.g. argument list}
+      {.repeated section children}
+        {@|template SELF}
+      {.alternates with},
+      {.end}
+
+    {# ---------------- }
+    {# BINARY OPERATORS }
+    {# ---------------- }
+
     {.or <}
       {a|template SELF} < {b|template SELF}
+    {.or >}
+      {a|template SELF} > {b|template SELF}
+    {.or <=}
+      {a|template SELF} <= {b|template SELF}
+    {.or >=}
+      {a|template SELF} >= {b|template SELF}
+    {.or +}
+      {a|template SELF} + {b|template SELF}
     {.or %}
       {a|template SELF} % {b|template SELF}
     {.or ===}
       {a|template SELF} === {b|template SELF}
+
+    {# --------------- }
+    {# UNARY OPERATORS }
+    {# --------------- }
+
     {.or ++}
       {.if postfix}
         {a|template SELF}++
       {.or}
         ++{a|template SELF}
       {.end}
+
     {.or IDENTIFIER}
       {value}
     {.or NUMBER}
       {value}
+    {.or STRING}
+      "{value}"  {# TODO: Proper quoting}
     {.end}
     """), more_predicates=node_predicates)
 

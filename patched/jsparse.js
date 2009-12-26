@@ -249,6 +249,7 @@ Np.toJSON = function(key) {
     case defs.SCRIPT:
     case defs.BLOCK:
     case defs.VAR:
+    case defs.LIST:  // e.g. argument list
       transformed = true;
       for (var i = 0; i < this.length; i++) {
         if (i === 0) {

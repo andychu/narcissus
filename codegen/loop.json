@@ -77,18 +77,20 @@
                       "value": "print"
                     },
                     "b": {
-                      "0": {
-                        "a": {
-                          "type": "STRING",
-                          "value": "even "
-                        },
-                        "b": {
-                          "type": "IDENTIFIER",
-                          "value": "i"
-                        },
-                        "type": "+",
-                        "value": "+"
-                      },
+                      "children": [
+                        {
+                          "a": {
+                            "type": "STRING",
+                            "value": "even "
+                          },
+                          "b": {
+                            "type": "IDENTIFIER",
+                            "value": "i"
+                          },
+                          "type": "+",
+                          "value": "+"
+                        }
+                      ],
                       "type": "LIST",
                       "value": ")"
                     },
@@ -111,18 +113,20 @@
                       "value": "print"
                     },
                     "b": {
-                      "0": {
-                        "a": {
-                          "type": "STRING",
-                          "value": "odd "
-                        },
-                        "b": {
-                          "type": "IDENTIFIER",
-                          "value": "i"
-                        },
-                        "type": "+",
-                        "value": "+"
-                      },
+                      "children": [
+                        {
+                          "a": {
+                            "type": "STRING",
+                            "value": "odd "
+                          },
+                          "b": {
+                            "type": "IDENTIFIER",
+                            "value": "i"
+                          },
+                          "type": "+",
+                          "value": "+"
+                        }
+                      ],
                       "type": "LIST",
                       "value": ")"
                     },
