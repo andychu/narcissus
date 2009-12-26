@@ -116,6 +116,16 @@ statement = jsontemplate.Template(
       {a|template SELF} % {b|template SELF}
     {.or ===}
       {a|template SELF} === {b|template SELF}
+    {.or ||}
+      {a|template SELF} || {b|template SELF}
+    {.or &&}
+      {a|template SELF} && {b|template SELF}
+    {.or |}
+      {a|template SELF} | {b|template SELF}
+    {.or &}
+      {a|template SELF} & {b|template SELF}
+    {.or ^}
+      {a|template SELF} ^ {b|template SELF}
 
     {# --------------- }
     {# UNARY OPERATORS }
@@ -128,6 +138,8 @@ statement = jsontemplate.Template(
       {.or}
         ++{a|template SELF}
       {.end}
+    {.or return}
+      return {value|template SELF};
 
     {.or IDENTIFIER}
       {value}
