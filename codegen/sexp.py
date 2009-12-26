@@ -71,17 +71,22 @@ statement = jsontemplate.Template(
       }{.newline}
 
     {.or for}
-    for ({setup|template SELF}; {#}
-         {condition|template SELF}; {#}
-         {update|template SELF}) {.meta-left} {.newline}
-      {body|template SELF}
-    } {.newline}
+      for ({setup|template SELF}; {#}
+           {condition|template SELF}; {#}
+           {update|template SELF}) {.meta-left} {.newline}
+        {body|template SELF}
+      } {.newline}
+
+    {.or FOR_IN}
+      for ({iterator|template SELF} in {object|template SELF}) {
+        {body|template SELF}
+      } {.newline}
 
     {.or while}
-    while ({condition|template SELF}) {#}
-    {
-      {body|template SELF}
-    } {.newline}
+      while ({condition|template SELF}) {#}
+      {
+        {body|template SELF}
+      } {.newline}
 
     {.or if}
       if ({condition|template SELF}) {.meta-left}{.newline}
