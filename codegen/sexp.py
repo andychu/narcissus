@@ -178,6 +178,13 @@ statement = jsontemplate.Template(
       {.alternates with}, {.end}
       {.meta-right}  {# TODO: fill in}
 
+    {.or ARRAY_INIT}
+      [
+      {.repeated section children}
+        {@|template SELF}{.newline}
+      {.alternates with}, {.end}
+      ]
+
     {.or PROPERTY_INIT}
       {a|template SELF}: {b|template SELF}
 

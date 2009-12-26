@@ -1492,14 +1492,16 @@
                                             {
                                               "type": "return",
                                               "value": {
-                                                "a": {
-                                                  "type": "null",
-                                                  "value": "null"
-                                                },
-                                                "b": {
-                                                  "type": "null",
-                                                  "value": "null"
-                                                },
+                                                "children": [
+                                                  {
+                                                    "type": "null",
+                                                    "value": "null"
+                                                  },
+                                                  {
+                                                    "type": "null",
+                                                    "value": "null"
+                                                  }
+                                                ],
                                                 "type": "ARRAY_INIT",
                                                 "value": "["
                                               }
@@ -1594,14 +1596,16 @@
                                             {
                                               "type": "return",
                                               "value": {
-                                                "a": {
-                                                  "type": "IDENTIFIER",
-                                                  "value": "func"
-                                                },
-                                                "b": {
-                                                  "type": "null",
-                                                  "value": "null"
-                                                },
+                                                "children": [
+                                                  {
+                                                    "type": "IDENTIFIER",
+                                                    "value": "func"
+                                                  },
+                                                  {
+                                                    "type": "null",
+                                                    "value": "null"
+                                                  }
+                                                ],
                                                 "type": "ARRAY_INIT",
                                                 "value": "["
                                               }
@@ -1694,14 +1698,16 @@
                                             {
                                               "type": "return",
                                               "value": {
-                                                "a": {
-                                                  "type": "IDENTIFIER",
-                                                  "value": "func"
-                                                },
-                                                "b": {
-                                                  "type": "null",
-                                                  "value": "null"
-                                                },
+                                                "children": [
+                                                  {
+                                                    "type": "IDENTIFIER",
+                                                    "value": "func"
+                                                  },
+                                                  {
+                                                    "type": "null",
+                                                    "value": "null"
+                                                  }
+                                                ],
                                                 "type": "ARRAY_INIT",
                                                 "value": "["
                                               }
@@ -2088,14 +2094,16 @@
                                                         {
                                                           "type": "return",
                                                           "value": {
-                                                            "a": {
-                                                              "type": "IDENTIFIER",
-                                                              "value": "func"
-                                                            },
-                                                            "b": {
-                                                              "type": "IDENTIFIER",
-                                                              "value": "args"
-                                                            },
+                                                            "children": [
+                                                              {
+                                                                "type": "IDENTIFIER",
+                                                                "value": "func"
+                                                              },
+                                                              {
+                                                                "type": "IDENTIFIER",
+                                                                "value": "args"
+                                                              }
+                                                            ],
                                                             "type": "ARRAY_INIT",
                                                             "value": "["
                                                           }
@@ -2114,14 +2122,16 @@
                                             {
                                               "type": "return",
                                               "value": {
-                                                "a": {
-                                                  "type": "null",
-                                                  "value": "null"
-                                                },
-                                                "b": {
-                                                  "type": "null",
-                                                  "value": "null"
-                                                },
+                                                "children": [
+                                                  {
+                                                    "type": "null",
+                                                    "value": "null"
+                                                  },
+                                                  {
+                                                    "type": "null",
+                                                    "value": "null"
+                                                  }
+                                                ],
                                                 "type": "ARRAY_INIT",
                                                 "value": "["
                                               }
@@ -2316,14 +2326,16 @@
                                             {
                                               "type": "return",
                                               "value": {
-                                                "a": {
-                                                  "type": "null",
-                                                  "value": "null"
-                                                },
-                                                "b": {
-                                                  "type": "null",
-                                                  "value": "null"
-                                                },
+                                                "children": [
+                                                  {
+                                                    "type": "null",
+                                                    "value": "null"
+                                                  },
+                                                  {
+                                                    "type": "null",
+                                                    "value": "null"
+                                                  }
+                                                ],
                                                 "type": "ARRAY_INIT",
                                                 "value": "["
                                               }
@@ -2369,40 +2381,42 @@
                               "value": "stack",
                               "name": "stack",
                               "initializer": {
-                                "a": {
-                                  "children": [
-                                    {
-                                      "a": {
-                                        "type": "IDENTIFIER",
-                                        "value": "context"
-                                      },
-                                      "b": {
-                                        "type": "IDENTIFIER",
-                                        "value": "context"
-                                      },
-                                      "type": "PROPERTY_INIT",
-                                      "value": "context"
-                                    },
-                                    {
-                                      "a": {
-                                        "type": "IDENTIFIER",
-                                        "value": "index"
-                                      },
-                                      "b": {
+                                "children": [
+                                  {
+                                    "children": [
+                                      {
                                         "a": {
-                                          "type": "NUMBER",
-                                          "value": 1
+                                          "type": "IDENTIFIER",
+                                          "value": "context"
                                         },
-                                        "type": "UNARY_MINUS",
-                                        "value": "-"
+                                        "b": {
+                                          "type": "IDENTIFIER",
+                                          "value": "context"
+                                        },
+                                        "type": "PROPERTY_INIT",
+                                        "value": "context"
                                       },
-                                      "type": "PROPERTY_INIT",
-                                      "value": 1
-                                    }
-                                  ],
-                                  "type": "OBJECT_INIT",
-                                  "value": "{"
-                                },
+                                      {
+                                        "a": {
+                                          "type": "IDENTIFIER",
+                                          "value": "index"
+                                        },
+                                        "b": {
+                                          "a": {
+                                            "type": "NUMBER",
+                                            "value": 1
+                                          },
+                                          "type": "UNARY_MINUS",
+                                          "value": "-"
+                                        },
+                                        "type": "PROPERTY_INIT",
+                                        "value": 1
+                                      }
+                                    ],
+                                    "type": "OBJECT_INIT",
+                                    "value": "{"
+                                  }
+                                ],
                                 "type": "ARRAY_INIT",
                                 "value": "["
                               },
@@ -4756,30 +4770,32 @@
                                                 "value": "pred"
                                               },
                                               "b": {
-                                                "a": {
-                                                  "type": "function",
-                                                  "value": "function",
-                                                  "params": [
-                                                    "x"
-                                                  ],
-                                                  "body": {
-                                                    "children": [
-                                                      {
-                                                        "type": "return",
-                                                        "value": {
-                                                          "type": "true",
-                                                          "value": "true"
-                                                        }
-                                                      }
+                                                "children": [
+                                                  {
+                                                    "type": "function",
+                                                    "value": "function",
+                                                    "params": [
+                                                      "x"
                                                     ],
-                                                    "type": "SCRIPT",
-                                                    "value": "{"
+                                                    "body": {
+                                                      "children": [
+                                                        {
+                                                          "type": "return",
+                                                          "value": {
+                                                            "type": "true",
+                                                            "value": "true"
+                                                          }
+                                                        }
+                                                      ],
+                                                      "type": "SCRIPT",
+                                                      "value": "{"
+                                                    }
+                                                  },
+                                                  {
+                                                    "type": "null",
+                                                    "value": "null"
                                                   }
-                                                },
-                                                "b": {
-                                                  "type": "null",
-                                                  "value": "null"
-                                                },
+                                                ],
                                                 "type": "ARRAY_INIT",
                                                 "value": "["
                                               },
@@ -4842,22 +4858,24 @@
                                             "b": {
                                               "children": [
                                                 {
-                                                  "a": {
-                                                    "type": "IDENTIFIER",
-                                                    "value": "pred"
-                                                  },
-                                                  "b": {
-                                                    "a": {
+                                                  "children": [
+                                                    {
                                                       "type": "IDENTIFIER",
-                                                      "value": "that"
+                                                      "value": "pred"
                                                     },
-                                                    "b": {
-                                                      "type": "IDENTIFIER",
+                                                    {
+                                                      "a": {
+                                                        "type": "IDENTIFIER",
+                                                        "value": "that"
+                                                      },
+                                                      "b": {
+                                                        "type": "IDENTIFIER",
+                                                        "value": "current_clause"
+                                                      },
+                                                      "type": ".",
                                                       "value": "current_clause"
-                                                    },
-                                                    "type": ".",
-                                                    "value": "current_clause"
-                                                  },
+                                                    }
+                                                  ],
                                                   "type": "ARRAY_INIT",
                                                   "value": "["
                                                 }
@@ -6896,66 +6914,68 @@
                                 "b": {
                                   "children": [
                                     {
-                                      "a": {
-                                        "children": [
-                                          {
-                                            "a": {
-                                              "type": "IDENTIFIER",
-                                              "value": "name"
-                                            },
-                                            "b": {
-                                              "type": "STRING",
+                                      "children": [
+                                        {
+                                          "children": [
+                                            {
+                                              "a": {
+                                                "type": "IDENTIFIER",
+                                                "value": "name"
+                                              },
+                                              "b": {
+                                                "type": "STRING",
+                                                "value": "pluralize"
+                                              },
+                                              "type": "PROPERTY_INIT",
                                               "value": "pluralize"
                                             },
-                                            "type": "PROPERTY_INIT",
-                                            "value": "pluralize"
-                                          },
-                                          {
-                                            "a": {
-                                              "type": "IDENTIFIER",
-                                              "value": "func"
-                                            },
-                                            "b": {
-                                              "type": "IDENTIFIER",
+                                            {
+                                              "a": {
+                                                "type": "IDENTIFIER",
+                                                "value": "func"
+                                              },
+                                              "b": {
+                                                "type": "IDENTIFIER",
+                                                "value": "_Pluralize"
+                                              },
+                                              "type": "PROPERTY_INIT",
                                               "value": "_Pluralize"
-                                            },
-                                            "type": "PROPERTY_INIT",
-                                            "value": "_Pluralize"
-                                          }
-                                        ],
-                                        "type": "OBJECT_INIT",
-                                        "value": "{"
-                                      },
-                                      "b": {
-                                        "children": [
-                                          {
-                                            "a": {
-                                              "type": "IDENTIFIER",
-                                              "value": "name"
-                                            },
-                                            "b": {
-                                              "type": "STRING",
+                                            }
+                                          ],
+                                          "type": "OBJECT_INIT",
+                                          "value": "{"
+                                        },
+                                        {
+                                          "children": [
+                                            {
+                                              "a": {
+                                                "type": "IDENTIFIER",
+                                                "value": "name"
+                                              },
+                                              "b": {
+                                                "type": "STRING",
+                                                "value": "cycle"
+                                              },
+                                              "type": "PROPERTY_INIT",
                                               "value": "cycle"
                                             },
-                                            "type": "PROPERTY_INIT",
-                                            "value": "cycle"
-                                          },
-                                          {
-                                            "a": {
-                                              "type": "IDENTIFIER",
-                                              "value": "func"
-                                            },
-                                            "b": {
-                                              "type": "IDENTIFIER",
+                                            {
+                                              "a": {
+                                                "type": "IDENTIFIER",
+                                                "value": "func"
+                                              },
+                                              "b": {
+                                                "type": "IDENTIFIER",
+                                                "value": "_Cycle"
+                                              },
+                                              "type": "PROPERTY_INIT",
                                               "value": "_Cycle"
-                                            },
-                                            "type": "PROPERTY_INIT",
-                                            "value": "_Cycle"
-                                          }
-                                        ],
-                                        "type": "OBJECT_INIT",
-                                        "value": "{"
-                                      },
+                                            }
+                                          ],
+                                          "type": "OBJECT_INIT",
+                                          "value": "{"
+                                        }
+                                      ],
                                       "type": "ARRAY_INIT",
                                       "value": "["
                                     }
@@ -6986,32 +7006,34 @@
                                 "b": {
                                   "children": [
                                     {
-                                      "a": {
-                                        "type": "IDENTIFIER",
-                                        "value": "more_formatters"
-                                      },
-                                      "b": {
-                                        "a": {
+                                      "children": [
+                                        {
                                           "type": "IDENTIFIER",
-                                          "value": "SimpleRegistry"
+                                          "value": "more_formatters"
                                         },
-                                        "b": {
-                                          "children": [
-                                            {
-                                              "type": "IDENTIFIER",
-                                              "value": "DEFAULT_FORMATTERS"
-                                            }
-                                          ],
-                                          "type": "LIST",
-                                          "value": ")"
+                                        {
+                                          "a": {
+                                            "type": "IDENTIFIER",
+                                            "value": "SimpleRegistry"
+                                          },
+                                          "b": {
+                                            "children": [
+                                              {
+                                                "type": "IDENTIFIER",
+                                                "value": "DEFAULT_FORMATTERS"
+                                              }
+                                            ],
+                                            "type": "LIST",
+                                            "value": ")"
+                                          },
+                                          "type": "CALL",
+                                          "value": "("
                                         },
-                                        "type": "CALL",
-                                        "value": "("
-                                      },
-                                      "c": {
-                                        "type": "IDENTIFIER",
-                                        "value": "default_formatters"
-                                      },
+                                        {
+                                          "type": "IDENTIFIER",
+                                          "value": "default_formatters"
+                                        }
+                                      ],
                                       "type": "ARRAY_INIT",
                                       "value": "["
                                     }
@@ -7080,28 +7102,30 @@
                                 "b": {
                                   "children": [
                                     {
-                                      "a": {
-                                        "type": "IDENTIFIER",
-                                        "value": "more_predicates"
-                                      },
-                                      "b": {
-                                        "a": {
+                                      "children": [
+                                        {
                                           "type": "IDENTIFIER",
-                                          "value": "SimpleRegistry"
+                                          "value": "more_predicates"
                                         },
-                                        "b": {
-                                          "children": [
-                                            {
-                                              "type": "IDENTIFIER",
-                                              "value": "DEFAULT_PREDICATES"
-                                            }
-                                          ],
-                                          "type": "LIST",
-                                          "value": ")"
-                                        },
-                                        "type": "CALL",
-                                        "value": "("
-                                      },
+                                        {
+                                          "a": {
+                                            "type": "IDENTIFIER",
+                                            "value": "SimpleRegistry"
+                                          },
+                                          "b": {
+                                            "children": [
+                                              {
+                                                "type": "IDENTIFIER",
+                                                "value": "DEFAULT_PREDICATES"
+                                              }
+                                            ],
+                                            "type": "LIST",
+                                            "value": ")"
+                                          },
+                                          "type": "CALL",
+                                          "value": "("
+                                        }
+                                      ],
                                       "type": "ARRAY_INIT",
                                       "value": "["
                                     }
@@ -7871,10 +7895,12 @@
                               "value": "stack",
                               "name": "stack",
                               "initializer": {
-                                "a": {
-                                  "type": "IDENTIFIER",
-                                  "value": "current_block"
-                                },
+                                "children": [
+                                  {
+                                    "type": "IDENTIFIER",
+                                    "value": "current_block"
+                                  }
+                                ],
                                 "type": "ARRAY_INIT",
                                 "value": "["
                               },
@@ -8911,14 +8937,16 @@
                                               "b": {
                                                 "children": [
                                                   {
-                                                    "a": {
-                                                      "type": "IDENTIFIER",
-                                                      "value": "func"
-                                                    },
-                                                    "b": {
-                                                      "type": "IDENTIFIER",
-                                                      "value": "new_block"
-                                                    },
+                                                    "children": [
+                                                      {
+                                                        "type": "IDENTIFIER",
+                                                        "value": "func"
+                                                      },
+                                                      {
+                                                        "type": "IDENTIFIER",
+                                                        "value": "new_block"
+                                                      }
+                                                    ],
                                                     "type": "ARRAY_INIT",
                                                     "value": "["
                                                   }
@@ -9491,14 +9519,16 @@
                                               "b": {
                                                 "children": [
                                                   {
-                                                    "a": {
-                                                      "type": "IDENTIFIER",
-                                                      "value": "_DoPredicates"
-                                                    },
-                                                    "b": {
-                                                      "type": "IDENTIFIER",
-                                                      "value": "new_block"
-                                                    },
+                                                    "children": [
+                                                      {
+                                                        "type": "IDENTIFIER",
+                                                        "value": "_DoPredicates"
+                                                      },
+                                                      {
+                                                        "type": "IDENTIFIER",
+                                                        "value": "new_block"
+                                                      }
+                                                    ],
                                                     "type": "ARRAY_INIT",
                                                     "value": "["
                                                   }
@@ -9940,24 +9970,26 @@
                                           "assignOp": null
                                         },
                                         "b": {
-                                          "a": {
-                                            "a": {
-                                              "type": "IDENTIFIER",
-                                              "value": "GetFormatter"
-                                            },
-                                            "b": {
-                                              "children": [
-                                                {
-                                                  "type": "IDENTIFIER",
-                                                  "value": "default_formatter"
-                                                }
-                                              ],
-                                              "type": "LIST",
-                                              "value": ")"
-                                            },
-                                            "type": "CALL",
-                                            "value": "("
-                                          },
+                                          "children": [
+                                            {
+                                              "a": {
+                                                "type": "IDENTIFIER",
+                                                "value": "GetFormatter"
+                                              },
+                                              "b": {
+                                                "children": [
+                                                  {
+                                                    "type": "IDENTIFIER",
+                                                    "value": "default_formatter"
+                                                  }
+                                                ],
+                                                "type": "LIST",
+                                                "value": ")"
+                                              },
+                                              "type": "CALL",
+                                              "value": "("
+                                            }
+                                          ],
                                           "type": "ARRAY_INIT",
                                           "value": "["
                                         },
@@ -10162,40 +10194,42 @@
                                   "b": {
                                     "children": [
                                       {
-                                        "a": {
-                                          "type": "IDENTIFIER",
-                                          "value": "_DoSubstitute"
-                                        },
-                                        "b": {
-                                          "children": [
-                                            {
-                                              "a": {
-                                                "type": "IDENTIFIER",
+                                        "children": [
+                                          {
+                                            "type": "IDENTIFIER",
+                                            "value": "_DoSubstitute"
+                                          },
+                                          {
+                                            "children": [
+                                              {
+                                                "a": {
+                                                  "type": "IDENTIFIER",
+                                                  "value": "name"
+                                                },
+                                                "b": {
+                                                  "type": "IDENTIFIER",
+                                                  "value": "name"
+                                                },
+                                                "type": "PROPERTY_INIT",
                                                 "value": "name"
                                               },
-                                              "b": {
-                                                "type": "IDENTIFIER",
-                                                "value": "name"
-                                              },
-                                              "type": "PROPERTY_INIT",
-                                              "value": "name"
-                                            },
-                                            {
-                                              "a": {
-                                                "type": "IDENTIFIER",
+                                              {
+                                                "a": {
+                                                  "type": "IDENTIFIER",
+                                                  "value": "formatters"
+                                                },
+                                                "b": {
+                                                  "type": "IDENTIFIER",
+                                                  "value": "formatters"
+                                                },
+                                                "type": "PROPERTY_INIT",
                                                 "value": "formatters"
-                                              },
-                                              "b": {
-                                                "type": "IDENTIFIER",
-                                                "value": "formatters"
-                                              },
-                                              "type": "PROPERTY_INIT",
-                                              "value": "formatters"
-                                            }
-                                          ],
-                                          "type": "OBJECT_INIT",
-                                          "value": "{"
-                                        },
+                                              }
+                                            ],
+                                            "type": "OBJECT_INIT",
+                                            "value": "{"
+                                          }
+                                        ],
                                         "type": "ARRAY_INIT",
                                         "value": "["
                                       }
@@ -10908,18 +10942,24 @@
                         "value": "OPTION_NAMES",
                         "name": "OPTION_NAMES",
                         "initializer": {
-                          "a": {
-                            "type": "STRING",
-                            "value": "meta"
-                          },
-                          "b": {
-                            "type": "STRING",
-                            "value": "format-char"
-                          },
-                          "c": {
-                            "type": "STRING",
-                            "value": "default-formatter"
-                          },
+                          "children": [
+                            {
+                              "type": "STRING",
+                              "value": "meta"
+                            },
+                            {
+                              "type": "STRING",
+                              "value": "format-char"
+                            },
+                            {
+                              "type": "STRING",
+                              "value": "default-formatter"
+                            },
+                            {
+                              "type": "STRING",
+                              "value": "undefined-str"
+                            }
+                          ],
                           "type": "ARRAY_INIT",
                           "value": "["
                         },
