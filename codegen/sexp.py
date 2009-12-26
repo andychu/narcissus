@@ -12,7 +12,8 @@ import sys
 this_dir = os.path.dirname(sys.argv[0])
 
 # HACK
-sys.path.append(os.path.join(this_dir, '..', 'build'))
+sys.path.append('/home/andy/hg/json-template/python')
+  #os.path.join(this_dir, '..', 'build')
 import jsontemplate
 
 # HACK
@@ -31,40 +32,12 @@ class NodePredicates(jsontemplate.FunctionRegistry):
   def Lookup(self, user_str):
     """The node type is also a predicate."""
     def func(v, context, args):
-      print v['type'], '==', user_str
-      print v['type']== user_str
+      # jprint v['type'], '==', user_str
+      #print v['type']== user_str
       return v['type'] == user_str
     return func, None  # No arguments
 
 node_predicates = NodePredicates()
-
-expr = jsontemplate.Template(
-    B("""
-    {.if PLUS}
-    {a} + {b}
-    {.or MINUS}
-    {a} - {b}
-    {.or MULT}
-    {a} * {b}
-    {.or DIV}
-    {a} / {b}
-    {.or FUNC}
-    {@|template func}
-    {.end}
-    """), more_predicates=node_predicates)
-
-func = jsontemplate.Template(
-    B("""
-    function ({.repeated section params}{@} {.end}) {
-      {.repeated section exprs}
-      {@|template expr}
-      {.end}
-    }
-    """))
-
-script = jsontemplate.Template(
-    B("""
-    """))
 
 statement = jsontemplate.Template(
     B("""
@@ -80,6 +53,12 @@ statement = jsontemplate.Template(
     for ({setup|template SELF};{condition|template SELF};{update|template SELF}) {
       {body|template SELF}
     }
+    {.or if}
+      if ({condition|template SELF}) {
+        {thenPart|template SELF}
+      } else {
+        {elsePart|template SELF}
+      }
     {.or var}
       var {.repeated section children}
             {.section initializer}
@@ -91,6 +70,10 @@ statement = jsontemplate.Template(
           {.end};
     {.or <}
       {a|template SELF} < {b|template SELF}
+    {.or %}
+      {a|template SELF} % {b|template SELF}
+    {.or ===}
+      {a|template SELF} === {b|template SELF}
     {.or ++}
       {.if postfix}
         {a|template SELF}++
@@ -110,9 +93,6 @@ def main(argv):
 
   filename = os.path.join(this_dir, 'loop.json')
   parse_tree = json.loads(open(filename).read())
-
-  jsontemplate.MakeTemplateGroup(
-      {'func': func, 'expr': expr, 'script': script, 'statement': statement})
   print statement.expand(parse_tree)
   return 0
 
