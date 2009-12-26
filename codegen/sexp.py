@@ -50,15 +50,15 @@ statement = jsontemplate.Template(
       {@|template SELF}
       {.end}
     {.or for}
-    for ({setup|template SELF};{condition|template SELF};{update|template SELF}) {
+    for ({setup|template SELF};{condition|template SELF};{update|template SELF}) {.meta-left} {.newline}
       {body|template SELF}
-    }
+    } {.newline}
     {.or if}
-      if ({condition|template SELF}) {
-        {thenPart|template SELF}
-      } else {
-        {elsePart|template SELF}
-      }
+      if ({condition|template SELF}) {.meta-left}{.newline}
+        {thenPart|template SELF}{.newline}
+      } else {.meta-left}{.newline}
+        {elsePart|template SELF}{.newline}
+      }{.newline}
     {.or var}
       var {.repeated section children}
             {.section initializer}
@@ -115,7 +115,7 @@ statement = jsontemplate.Template(
     {.or STRING}
       "{value}"  {# TODO: Proper quoting}
     {.end}
-    """), more_predicates=node_predicates)
+    """), more_predicates=node_predicates, whitespace='strip-line')
 
 
 def main(argv):
