@@ -116,6 +116,8 @@ statement = jsontemplate.Template(
         {@|template SELF}
       {.alternates with},
       {.end}
+    {.or GROUP}  {# e.g. argument list}
+      ({a|template SELF}){.newline}
 
     {# ---------------- }
     {# BINARY OPERATORS }
@@ -138,6 +140,8 @@ statement = jsontemplate.Template(
       {a|template SELF} >= {b|template SELF}
     {.or +}
       {a|template SELF} + {b|template SELF}
+    {.or -}
+      {a|template SELF} - {b|template SELF}
     {.or %}
       {a|template SELF} % {b|template SELF}
     {.or ===}
