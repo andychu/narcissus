@@ -1,6 +1,9 @@
 #!/usr/bin/python -S
 """
 sexp.py
+
+Demonstration of using JSON Template to format JSON parse trees from this
+modified version of Narcissus.
 """
 
 __author__ = 'Andy Chu'
@@ -77,6 +80,21 @@ statement = jsontemplate.Template(
           {@|template SELF}{.newline}
         }{.newline}
       {.end}
+
+    {.or switch}
+    switch ({discriminant|template SELF}) {.meta-left} {.newline}
+      {.repeated section cases}
+        {@|template SELF}
+      {.end}
+    } {.newline}
+
+    {.or case}
+      case {caseLabel|template SELF}: {.newline}
+        {statements|template SELF}
+
+    {.or default}
+      default: {.newline}
+        {statements|template SELF}
 
     {.or var}
       var {.repeated section children}
