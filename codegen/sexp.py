@@ -45,20 +45,32 @@ statement = jsontemplate.Template(
       {.repeated section children}
       {@|template SELF}
       {.end}
+
     {.or BLOCK}
       {.repeated section children}
       {@|template SELF}
       {.end}
+
+    {.or function}
+      function {name} ({.repeated section params}{@}{.alternates with}, {.end})
+          {.meta-left}{.newline}
+        {#body|template SELF}
+      }{.newline}
+
     {.or for}
-    for ({setup|template SELF};{condition|template SELF};{update|template SELF}) {.meta-left} {.newline}
+    for ({setup|template SELF}; {#}
+         {condition|template SELF}; {#}
+         {update|template SELF}) {.meta-left} {.newline}
       {body|template SELF}
     } {.newline}
+
     {.or if}
       if ({condition|template SELF}) {.meta-left}{.newline}
         {thenPart|template SELF}{.newline}
       } else {.meta-left}{.newline}
         {elsePart|template SELF}{.newline}
       }{.newline}
+
     {.or var}
       var {.repeated section children}
             {.section initializer}
@@ -68,6 +80,7 @@ statement = jsontemplate.Template(
             {.end}
           {.alternates with},
           {.end};
+
     {.or ;}  {# statement}
       {expression|template SELF};
     {.or CALL}
@@ -102,6 +115,7 @@ statement = jsontemplate.Template(
     {# --------------- }
 
     {.or ++}
+      {# TODO: fix}
       {.if postfix}
         {a|template SELF}++
       {.or}
@@ -121,7 +135,7 @@ statement = jsontemplate.Template(
 def main(argv):
   """Returns an exit code."""
 
-  filename = os.path.join(this_dir, 'simple.json')
+  filename = os.path.join(this_dir, argv[1])
   parse_tree = json.loads(open(filename).read())
   print statement.expand(parse_tree)
   return 0
