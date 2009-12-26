@@ -121,7 +121,7 @@ statement = jsontemplate.Template(
 def main(argv):
   """Returns an exit code."""
 
-  filename = os.path.join(this_dir, 'loop.json')
+  filename = os.path.join(this_dir, 'simple.json')
   parse_tree = json.loads(open(filename).read())
   print statement.expand(parse_tree)
   return 0
