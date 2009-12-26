@@ -8,6 +8,7 @@ __author__ = 'Andy Chu'
 
 import os
 import sys
+import traceback
 
 this_dir = os.path.dirname(sys.argv[0])
 
@@ -34,6 +35,8 @@ class NodePredicates(jsontemplate.FunctionRegistry):
     def func(v, context, args):
       # jprint v['type'], '==', user_str
       #print v['type']== user_str
+      if v is None:
+        return False  # This makes None values expand empty?
       return v['type'] == user_str
     return func, None  # No arguments
 
@@ -54,7 +57,7 @@ statement = jsontemplate.Template(
     {.or function}
       function {name} ({.repeated section params}{@}{.alternates with}, {.end})
           {.meta-left}{.newline}
-        {#body|template SELF}
+        {body|template SELF}
       }{.newline}
 
     {.or for}
@@ -67,9 +70,11 @@ statement = jsontemplate.Template(
     {.or if}
       if ({condition|template SELF}) {.meta-left}{.newline}
         {thenPart|template SELF}{.newline}
-      } else {.meta-left}{.newline}
-        {elsePart|template SELF}{.newline}
-      }{.newline}
+      {.section elsePart}
+        } else {.meta-left}{.newline}
+          {@|template SELF}{.newline}
+        }{.newline}
+      {.end}
 
     {.or var}
       var {.repeated section children}
@@ -137,7 +142,16 @@ def main(argv):
 
   filename = os.path.join(this_dir, argv[1])
   parse_tree = json.loads(open(filename).read())
-  print statement.expand(parse_tree)
+  try:
+    print statement.expand(parse_tree)
+  except jsontemplate.EvaluationError, e:
+    _, _, tb = sys.exc_info()
+    traceback.print_tb(tb)
+    print e
+    print '-----'
+    etype, evalue, etraceback = e.original_exc_info
+    traceback.print_tb(etraceback)
+    print evalue
   return 0
 
 
