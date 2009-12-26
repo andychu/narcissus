@@ -38,6 +38,8 @@ class NodePredicates(jsontemplate.FunctionRegistry):
       if v is None:
         return False  # This makes None values expand empty?
       return v['type'] == user_str
+    # For debugging in the trace
+    func.__name__ = '<%s>' % user_str
     return func, None  # No arguments
 
 node_predicates = NodePredicates()
@@ -134,7 +136,8 @@ statement = jsontemplate.Template(
     {.or STRING}
       "{value}"  {# TODO: Proper quoting}
     {.end}
-    """), more_predicates=node_predicates, whitespace='strip-line')
+    """),
+    more_predicates=node_predicates, whitespace='strip-line', undefined_str='')
 
 
 def main(argv):
@@ -143,15 +146,23 @@ def main(argv):
   filename = os.path.join(this_dir, argv[1])
   parse_tree = json.loads(open(filename).read())
   try:
-    print statement.expand(parse_tree)
+    print statement.expand(parse_tree, trace=jsontemplate.Trace())
   except jsontemplate.EvaluationError, e:
     _, _, tb = sys.exc_info()
     traceback.print_tb(tb)
     print e
     print '-----'
-    etype, evalue, etraceback = e.original_exc_info
-    traceback.print_tb(etraceback)
-    print evalue
+    if e.original_exc_info:
+      etype, evalue, etraceback = e.original_exc_info
+      traceback.print_tb(etraceback)
+      print evalue
+
+    if e.trace:
+      print e.trace
+      print e.trace.stack
+    else:
+      print 'no trace'
+
   return 0
 
 
