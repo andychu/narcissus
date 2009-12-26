@@ -87,6 +87,7 @@ statement = jsontemplate.Template(
             {.end}
           {.alternates with},
           {.end};
+          {.newline}
 
     {.or ;}  {# statement}
       {expression|template SELF};
@@ -101,6 +102,13 @@ statement = jsontemplate.Template(
     {# ---------------- }
     {# BINARY OPERATORS }
     {# ---------------- }
+
+    {.or .} 
+      {a|template SELF}.{b|template SELF}
+    {.or INDEX} 
+      {a|template SELF}[{b|template SELF}]
+    {.or =} 
+      {a|template SELF} = {b|template SELF}
 
     {.or <}
       {a|template SELF} < {b|template SELF}
@@ -141,12 +149,25 @@ statement = jsontemplate.Template(
     {.or return}
       return {value|template SELF};
 
+    {.or OBJECT_INIT}
+      {.meta-left}{.meta-right}  {# TODO: fill in}
+    {.or NEW_WITH_ARGS}
+      new {a|template SELF}({b|template SELF});
     {.or IDENTIFIER}
       {value}
     {.or NUMBER}
       {value}
     {.or STRING}
       "{value}"  {# TODO: Proper quoting}
+    {.or REGEXP}
+      /regexp/  {# TODO: why is this missing from narcissus?}
+
+    {# --------- }
+    {# CONSTANTS }
+    {# --------- }
+
+    {.or null}
+      null
     {.end}
     """),
     more_predicates=node_predicates, whitespace='strip-line', undefined_str='')
