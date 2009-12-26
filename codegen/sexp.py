@@ -47,6 +47,10 @@ class NodePredicates(jsontemplate.FunctionRegistry):
 
 node_predicates = NodePredicates()
 
+def Fail(value):
+  raise RuntimeError('Unknown type for %r' % value)
+
+
 statement = jsontemplate.Template(
     B("""
     {.if SCRIPT}
@@ -119,6 +123,9 @@ statement = jsontemplate.Template(
     {.or GROUP}  {# e.g. argument list}
       ({a|template SELF}){.newline}
 
+    {.or ?} 
+      {a|template SELF} ? {b|template SELF} : {c|template SELF}
+
     {# ---------------- }
     {# BINARY OPERATORS }
     {# ---------------- }
@@ -146,6 +153,8 @@ statement = jsontemplate.Template(
       {a|template SELF} % {b|template SELF}
     {.or ===}
       {a|template SELF} === {b|template SELF}
+    {.or ==}
+      {a|template SELF} == {b|template SELF}
     {.or ||}
       {a|template SELF} || {b|template SELF}
     {.or &&}
@@ -162,12 +171,27 @@ statement = jsontemplate.Template(
     {# --------------- }
 
     {.or ++}
-      {# TODO: fix}
+      {# TODO: fix postfix}
       {.if postfix}
         {a|template SELF}++
       {.or}
         ++{a|template SELF}
       {.end}
+
+    {.or --}
+      {# TODO: fix postfix}
+      {.if postfix}
+        {a|template SELF}--
+      {.or}
+        --{a|template SELF}
+      {.end}
+
+    {.or UNARY_MINUS}; 
+      +{a|template SELF}
+
+    {.or UNARY_PLUS};
+      +{a|template SELF}
+
     {.or return}
       return {value|template SELF};
 
@@ -192,6 +216,10 @@ statement = jsontemplate.Template(
       new {a|template SELF}({b|template SELF});
     {.or throw}
       throw {exception|template SELF};{.newline}
+    {.or break}
+      break;
+    {.or continue}
+      continue;
     {.or IDENTIFIER}
       {value}
     {.or NUMBER}
@@ -207,9 +235,14 @@ statement = jsontemplate.Template(
 
     {.or null}
       null
+    {.or}
+      {@|fail}
     {.end}
     """),
-    more_predicates=node_predicates, whitespace='strip-line', undefined_str='')
+    more_formatters={'fail': Fail},
+    more_predicates=node_predicates,
+    whitespace='strip-line',
+    undefined_str='')
 
 
 def main(argv):
@@ -229,7 +262,7 @@ def main(argv):
       traceback.print_tb(etraceback)
       print evalue
 
-    if e.trace:
+    if hasattr(e, 'trace') and e.trace:
       print e.trace
       print e.trace.stack
     else:
