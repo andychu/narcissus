@@ -168,9 +168,19 @@ statement = jsontemplate.Template(
       return {value|template SELF};
 
     {.or OBJECT_INIT}
-      {.meta-left}{.meta-right}  {# TODO: fill in}
+      {.meta-left}
+      {.repeated section children}
+        {@|template SELF}{.newline}
+      {.alternates with}, {.end}
+      {.meta-right}  {# TODO: fill in}
+
+    {.or PROPERTY_INIT}
+      {a|template SELF}: {b|template SELF}
+
     {.or NEW_WITH_ARGS}
       new {a|template SELF}({b|template SELF});
+    {.or throw}
+      throw {exception|template SELF};{.newline}
     {.or IDENTIFIER}
       {value}
     {.or NUMBER}

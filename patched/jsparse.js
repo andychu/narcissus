@@ -249,6 +249,7 @@ Np.toJSON = function(key) {
     case defs.SCRIPT:
     case defs.BLOCK:
     case defs.VAR:
+    case defs.OBJECT_INIT:
     case defs.LIST:  // e.g. argument list
       transformed = true;
       for (var i = 0; i < this.length; i++) {
@@ -261,12 +262,16 @@ Np.toJSON = function(key) {
   }
 
   // Constant number of elements: 0 -> a, 1 -> b, etc.
-  var arity = opArity[this.type];
-  if (1 <= arity && arity <= 3) {  // 1, 2, 3
-    jsonObj.a = this[0];
-    jsonObj.b = this[1];
-    jsonObj.c = this[2];  // any of these may be undefined
-    transformed = true;
+  if (!transformed) {
+    var arity = opArity[this.type];
+    // PROPERTY_INIT doesn't have arity since it's not an operator, but it
+    // should have 'a' and 'b' rather than 0 and 1
+    if ((1 <= arity && arity <= 3) || this.type == defs.PROPERTY_INIT) {
+      jsonObj.a = this[0];
+      jsonObj.b = this[1];
+      jsonObj.c = this[2];  // any of these may be undefined
+      transformed = true;
+    }
   }
 
   for (var name in this) {
