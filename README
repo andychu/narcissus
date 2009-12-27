@@ -17,11 +17,16 @@ STATUS (as of 12/26/09)
 
 Enhancements over the original Narcissus:
 
+- Packaged as a CommonJS module (into a single JavaScript file by
+  build/makelib.py)
+
 - Defines a toJSON() method on Node instances, so the parse tree can be output
   as JSON
   - The bin/narcissus tool can be used to output a JSON parse tree
   - See codegen/*.json for examples, which are parse trees of the stuff in
     testdata/*.js
+  - The JSON parse tree has been consumed (experimentally) by JSON Template (see
+    codegen/) 
 
 - Uses ES5 Object.defineProperty rather than Mozilla's __defineProperty__
   (halfway working in Narwhal, without writable/configurable/etc.)
@@ -33,10 +38,8 @@ Enhancements over the original Narcissus:
     (TODO: build/makelib.py should have an option to include/exclude the
     metacircular interpreter, since the parser is the most useful part)
 
-In progress:
-
-- The JSON parse tree has been consumed (experimentally) by JSON Template (see
-  codegen/) 
-- There is a in-progress test in tests/narcissus_test.py, which borrows the
-  approach of pynarcissus and runs over v8's JS test suites.
-  (See http://code.google.com/p/pynarcissus/)
+- Tests
+  - Has some JavaScript tests based on Narwhal/CommonJS
+  - There is a in-progress test in tests/narcissus_test.py, which borrows the
+    approach of pynarcissus and runs over v8's JS test suites.  (See
+    http://code.google.com/p/pynarcissus/)
