@@ -7,6 +7,36 @@ This is a port to Narwhal: http://narwhaljs.org
 
 To develop:
 
-1) Make your sources to patched/*.js
+1) Make your changes to patched/*.js, which is a modified copy of the code in
+original/*.js
 2) Run build/makelib.py to make lib/narcissus.js
 3) var narcissus = require('narcissus');
+
+STATUS (as of 12/26/09)
+-----------------------
+
+Enhancements over the original Narcissus:
+
+- Defines a toJSON() method on Node instances, so the parse tree can be output
+  as JSON
+  - The bin/narcissus tool can be used to output a JSON parse tree
+  - See codegen/*.json for examples, which are parse trees of the stuff in
+    testdata/*.js
+
+- Uses ES5 Object.defineProperty rather than Mozilla's __defineProperty__
+  (halfway working in Narwhal, without writable/configurable/etc.)
+
+- Engine compatibility
+  - The parser works in v8 (in addition to Rhino, and presumably other JS
+    engines)
+  - jsexec.js doesn't work in v8, because of use of Mozilla's 'catch if'
+    (TODO: build/makelib.py should have an option to include/exclude the
+    metacircular interpreter, since the parser is the most useful part)
+
+In progress:
+
+- The JSON parse tree has been consumed (experimentally) by JSON Template (see
+  codegen/) 
+- There is a in-progress test in tests/narcissus_test.py, which borrows the
+  approach of pynarcissus and runs over v8's JS test suites.
+  (See http://code.google.com/p/pynarcissus/)
