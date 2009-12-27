@@ -34,8 +34,8 @@ Enhancements over the original Narcissus:
 - Engine compatibility
   - The parser works in v8 (in addition to Rhino, and presumably other JS
     engines)
-  - jsexec.js doesn't work in v8, because of use of Mozilla's 'catch if'
-    (TODO: build/makelib.py should have an option to include/exclude the
+  - jsexec.js works in Rhino but not in v8, because of use of Mozilla's 'catch
+    if' (TODO: build/makelib.py should have an option to include/exclude the
     metacircular interpreter, since the parser is the most useful part)
 
 - Tests
@@ -43,3 +43,9 @@ Enhancements over the original Narcissus:
   - There is a in-progress test in tests/narcissus_test.py, which borrows the
     approach of pynarcissus and runs over v8's JS test suites.  (See
     http://code.google.com/p/pynarcissus/)
+
+The meta-interpreter runs really basic code correctly, but some things appear
+broken (see narcissus-test.js).
+
+Docs are not complete, so if you want to use this, feel free to mail me at
+andy@chubot.org.
