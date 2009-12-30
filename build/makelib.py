@@ -45,7 +45,7 @@ def main(argv):
   filenames = [
       'patched/jsdefs.js',
       'patched/jsparse.js',
-      #'patched/jsexec.js',
+      'patched/jsexec.js',
       'patched/jsformat.js',
       ]
 

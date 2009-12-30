@@ -66,38 +66,29 @@ exports.testFormat = function() {
     print(code);
     var parseTree = narcissus.parse(code);
 
-    print("PARSED");
-    print(json.stringify(parseTree, null, 2));
-
-    print("FORMAT");
     print(narcissus.format(parseTree));
-    print("DONE FORMAT");
 }
 
 exports.testFunction = function() {
     // TODO: Make this work
-    return;
     var code = testFileContents('testdata/function.js');
-
-    print(code);
     var result = narcissus.evaluate(code);
+    return;
     print("testFunction " + result);
 }
 
 exports.testParseRealCode = function() {
     var code = testFileContents('testdata/json-template.js');
+    return; // disabled for Rhino
     var parseTree = narcissus.parse(code);
-    return;
     print(json.stringify(parseTree, null, 2));
-    print("FORMAT");
     print(narcissus.format(parseTree));
-    print("DONE FORMAT");
 }
 
 exports.testBreak = function() {
     var code = testFileContents('testdata/break.js');
     var parseTree = narcissus.parse(code);
-    print(json.stringify(parseTree, null, 2));
+    //print(json.stringify(parseTree, null, 2));
 }
 
 if (require.main === module.id)
