@@ -1,0 +1,7 @@
+For reference, this is a patched version of Narcissus I found copied into
+another project:
+
+http://github.com/xzilla/phppgadmin
+
+Apparently it was tried for use in Selenium, but then removed.  Possibly has
+some useful browser-compatibility fixes.
