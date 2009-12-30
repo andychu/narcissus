@@ -65,7 +65,6 @@ exports.testFunction = function() {
     // TODO: Make this work
     var code = testFileContents('testdata/function.js');
     var result = narcissus.evaluate(code);
-    return;
     print("testFunction " + result);
 }
 
@@ -81,6 +80,22 @@ exports.testParseRealCode = function() {
       print('stack ' + e.stack);
     }
     print('RESULT ' + result);
+}
+
+exports.testParseItself = function() {
+    //var code = testFileContents('lib/narcissus.js');
+    var code = testFileContents('patched/jsdefs.js');
+    var code = testFileContents('patched/jsparse.js');
+
+    // TODO: Parse error in jsexec.js
+    var code = testFileContents('patched/jsexec.js');
+    try {
+      var parseTree = narcissus.parse(code);
+    } catch (e) {
+      print('name ' + e.name);
+      print('message ' + e.message);
+      print('stack ' + e.stack);
+    }
 }
 
 exports.testBreak = function() {
