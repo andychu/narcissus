@@ -32,11 +32,8 @@ Enhancements over the original Narcissus:
   (halfway working in Narwhal, without writable/configurable/etc.)
 
 - Engine compatibility
-  - The parser works in v8 (in addition to Rhino, and presumably other JS
-    engines)
-  - jsexec.js works in Rhino but not in v8, because of use of Mozilla's 'catch
-    if' (TODO: build/makelib.py should have an option to include/exclude the
-    metacircular interpreter, since the parser is the most useful part)
+  - Fixed Mozilla-specific extensions ('catch if') so it works in narwhal-v8 in
+    addition to narwhal-rhino
 
 - Tests
   - Has some JavaScript tests based on Narwhal/CommonJS
@@ -44,15 +41,17 @@ Enhancements over the original Narcissus:
     approach of pynarcissus and runs over v8's JS test suites.  (See
     http://code.google.com/p/pynarcissus/)
 
-The meta-interpreter runs really basic code correctly, but some things appear
-broken (see narcissus-test.js).
-
-Docs are not complete, so if you want to use this, feel free to mail me at
-andy@chubot.org.
-
 Known issues
 ------------
+
+- The meta-interpreter runs really basic code correctly, but some things appear
+  broken (see narcissus-test.js).  Right now I care mostly about the parser.
 
 - Under narwhal-rhino, tests/narcissus-test/testParseRealCode takes about 30
   seconds.  On narwhal-v8, it's more or less instant.  Could be a narwhal-rhino
   bug.
+
+
+Docs are not complete, so if you want to use this, feel free to mail me at
+andy@chubot.org.
+

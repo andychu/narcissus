@@ -35,8 +35,10 @@ var global = {
         ExecutionContext.current = x2;
         try {
             execute(parse(s), x2);
-        } catch (e if e == defs.THROW) {
-            x.result = x2.result;
+        } catch (e) {
+            if (e == defs.THROW) {
+                x.result = x2.result;
+            }
             throw e;
         } finally {
             ExecutionContext.current = x;
@@ -301,7 +303,10 @@ var execute = exports.execute = function(n, x) {
                     if (t.statements.length) {
                         try {
                             execute(t.statements, x);
-                        } catch (e if e == defs.BREAK && x.target == n) {
+                        } catch (e) {
+                            if (!(e == defs.BREAK && x.target == n)) {
+                                throw e;
+                            }
                             break switch_loop;
                         }
                     }
@@ -321,10 +326,14 @@ var execute = exports.execute = function(n, x) {
         while (!n.condition || getValue(execute(n.condition, x))) {
             try {
                 execute(n.body, x);
-            } catch (e if e == defs.BREAK && x.target == n) {
-                break;
-            } catch (e if e == defs.CONTINUE && x.target == n) {
-                continue;
+            } catch (e) {
+                if (e == defs.BREAK && x.target == n) {
+                    break;
+                } else if (e == defs.CONTINUE && x.target == n) {
+                    continue;
+                } else {
+                    throw e;
+                }
             }
             n.update && getValue(execute(n.update, x));
         }
@@ -347,10 +356,14 @@ var execute = exports.execute = function(n, x) {
             putValue(execute(r, x), a[i], r);
             try {
                 execute(n.body, x);
-            } catch (e if e == BREAK && x.target == n) {
-                break;
-            } catch (e if e == CONTINUE && x.target == n) {
-                continue;
+            } catch (e) {
+                if (e == BREAK && x.target == n) {
+                    break;
+                } else if (e == CONTINUE && x.target == n) {
+                    continue;
+                } else {
+                    throw e;
+                }
             }
         }
         break;
@@ -359,10 +372,14 @@ var execute = exports.execute = function(n, x) {
         do {
             try {
                 execute(n.body, x);
-            } catch (e if e == defs.BREAK && x.target == n) {
-                break;
-            } catch (e if e == defs.CONTINUE && x.target == n) {
-                continue;
+            } catch (e) {
+                if (e == defs.BREAK && x.target == n) {
+                    break;
+                } else if (e == defs.CONTINUE && x.target == n) {
+                    continue;
+                } else {
+                    throw e;
+                }
             }
         } while (getValue(execute(n.condition, x)));
         break;
@@ -375,7 +392,10 @@ var execute = exports.execute = function(n, x) {
       case defs.TRY:
         try {
             execute(n.tryBlock, x);
-        } catch (e if e == defs.THROW && (j = n.catchClauses.length)) {
+        } catch (e) {
+            if (!(e == defs.THROW && (j = n.catchClauses.length))) {
+                throw e;
+            }
             e = x.result;
             x.result = undefined;
             for (i = 0; ; i++) {
@@ -452,7 +472,10 @@ var execute = exports.execute = function(n, x) {
       case defs.LABEL:
         try {
             execute(n.statement, x);
-        } catch (e if e == defs.BREAK && x.target == n) {
+        } catch (e) {
+            if (!(e == defs.BREAK && x.target == n)) {
+                throw e;
+            }
         }
         break;
 
@@ -792,11 +815,15 @@ var FOp = FunctionObject.prototype = {
         ExecutionContext.current = x2;
         try {
             execute(f.body, x2);
-        } catch (e if e == defs.RETURN) {
-            return x2.result;
-        } catch (e if e == defs.THROW) {
-            x.result = x2.result;
-            throw defs.THROW;
+        } catch (e) {
+            if (e == defs.RETURN) {
+                return x2.result;
+            } else if (e == defs.THROW) {
+                x.result = x2.result;
+                throw defs.THROW;
+            } else {
+                throw e;
+            }
         } finally {
             ExecutionContext.current = x;
         }
@@ -932,7 +959,10 @@ var evaluate = exports.evaluate = function(s, f, l) {
     ExecutionContext.current = x2;
     try {
         execute(parse(s, f, l), x2);
-    } catch (e if e == defs.THROW) {
+    } catch (e) {
+        if (e !== defs.THROW) {
+            throw e;
+        }
         if (x) {
             x.result = x2.result;
             throw defs.THROW;
