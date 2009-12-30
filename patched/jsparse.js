@@ -28,7 +28,7 @@ var fpRegExp = /^\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[
 // A regexp to match regexp literals.
 var reRegExp = /^\/((?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+)\/([gimy]*)/;
 
-var Tokenizer = exports.Tokenizer = function Tokenizer(s, f, l) {
+function Tokenizer(s, f, l) {
     this.cursor = 0;
     this.source = String(s);
     this.tokens = [];
@@ -111,6 +111,10 @@ Tokenizer.prototype = {
             if (!(match = /^\/(?:\*(?:.|\n)*?\*\/|\/.*)/(input)))
                 break;
             var comment = match[0];
+
+            // TODO: EXPOSE COMMENTS, with singleLine: true/false
+            // print('GOT COMMENT ' + match[0]);
+
             this.cursor += comment.length;
             newlines = comment.match(/\n/g);
             if (newlines)
@@ -183,7 +187,7 @@ Tokenizer.prototype = {
 
 };
 
-var CompilerContext = exports.CompilerContext = function CompilerContext(inFunction) {
+function CompilerContext(inFunction) {
     this.inFunction = inFunction;
     this.stmtStack = [];
     this.funDecls = [];
@@ -195,7 +199,7 @@ CCp.bracketLevel = CCp.curlyLevel = CCp.parenLevel = CCp.hookLevel = 0;
 CCp.ecmaStrictMode = CCp.inForLoopInit = false;
 
 // t, x: Tokenizer, CompilerContext
-var Script = exports.Script = function Script(t, x) {
+function Script(t, x) {
     var n = Statements(t, x);
     n.type = defs.SCRIPT;
     n.funDecls = x.funDecls;
@@ -207,7 +211,7 @@ var top = function (stack) {
     return stack.length && stack[stack.length-1];
 };
 
-var Node = exports.Node = function Node(t, type) {
+function Node(t, type) {
     var token = t.token;
     if (token) {
         this.type = type || token.type;
@@ -357,7 +361,7 @@ function nest(t, x, node, func, end) {
 }
 
 // t, x: Tokenizer, CompilerContext
-var Statements = exports.Statements = function Statements(t, x) {
+function Statements(t, x) {
     var n = new Node(t, defs.BLOCK);
     x.stmtStack.push(n);
     while (!t.done && t.peek() != defs.RIGHT_CURLY) {
@@ -368,7 +372,7 @@ var Statements = exports.Statements = function Statements(t, x) {
 }
 
 // t, x: Tokenizer, CompilerContext
-var Block = exports.Block = function Block(t, x) {
+function Block(t, x) {
     t.mustMatch(defs.LEFT_CURLY);
     var n = Statements(t, x);
     t.mustMatch(defs.RIGHT_CURLY);
@@ -377,7 +381,7 @@ var Block = exports.Block = function Block(t, x) {
 
 var DECLARED_FORM = 0, EXPRESSED_FORM = 1, STATEMENT_FORM = 2;
 
-var Statement = exports.Statement = function Statement(t, x) {
+function Statement(t, x) {
     var i, label, n, n2, ss, tt = t.get();
 
     // Cases for statements ending in a right curly return early, avoiding the
@@ -633,8 +637,6 @@ var Statement = exports.Statement = function Statement(t, x) {
     return n;
 }
 
-var FunctionDefinition =
-exports.FunctionDefinition =
 function FunctionDefinition(t, x, requireName, functionForm) {
     var f = new Node(t);
     if (f.type != defs.FUNCTION)
@@ -667,7 +669,7 @@ function FunctionDefinition(t, x, requireName, functionForm) {
     return f;
 }
 
-var Variables = exports.Variables = function Variables(t, x) {
+function Variables(t, x) {
     var n = new Node(t);
     do {
         t.mustMatch(defs.IDENTIFIER);
@@ -685,7 +687,7 @@ var Variables = exports.Variables = function Variables(t, x) {
     return n;
 }
 
-var ParenExpression = exports.ParenExpression = function ParenExpression(t, x) {
+function ParenExpression(t, x) {
     t.mustMatch(defs.LEFT_PAREN);
     var n = Expression(t, x);
     t.mustMatch(defs.RIGHT_PAREN);
@@ -743,7 +745,7 @@ var opArity = {
 for (i in opArity)
     opArity[defs[i]] = opArity[i];
 
-var Expression = exports.Expression = function Expression(t, x, stop) {
+function Expression(t, x, stop) {
     var n, id, tt, operators = [], operands = [];
     var bl = x.bracketLevel, cl = x.curlyLevel, pl = x.parenLevel,
         hl = x.hookLevel;
@@ -1066,7 +1068,7 @@ loop:
 //   s: string to parse
 //   f: filename, defaults to ""
 //   l: line number, defaults to 1
-var parse = exports.parse = function parse(s, f, l) {
+var parse = exports.parse = function (s, f, l) {
     var t = new Tokenizer(s, f, l);
     var x = new CompilerContext(false);
     var n = Script(t, x);
