@@ -71,9 +71,16 @@ exports.testFunction = function() {
 
 exports.testParseRealCode = function() {
     var code = testFileContents('testdata/json-template.js');
-    return; // disabled for Rhino
+    //return; // disabled for Rhino
     var parseTree = narcissus.parse(code);
-    print(json.stringify(parseTree, null, 2));
+    try {
+      var result = narcissus.evaluate(code);
+    } catch (e) {
+      print('name ' + e.name);
+      print('message ' + e.message);
+      print('stack ' + e.stack);
+    }
+    print('RESULT ' + result);
 }
 
 exports.testBreak = function() {
