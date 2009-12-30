@@ -49,3 +49,10 @@ broken (see narcissus-test.js).
 
 Docs are not complete, so if you want to use this, feel free to mail me at
 andy@chubot.org.
+
+Known issues
+------------
+
+- Under narwhal-rhino, tests/narcissus-test/testParseRealCode takes about 30
+  seconds.  On narwhal-v8, it's more or less instant.  Could be a narwhal-rhino
+  bug.
