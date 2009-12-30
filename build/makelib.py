@@ -46,7 +46,8 @@ def main(argv):
       'patched/jsdefs.js',
       'patched/jsparse.js',
       'patched/jsexec.js',
-      'patched/jsformat.js',
+      # TODO: probably don't need this, could delete
+      #'patched/jsformat.js',
       ]
 
   sources = []

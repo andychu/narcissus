@@ -61,14 +61,6 @@ exports.testSimpleCode = function() {
     var execResult = narcissus.evaluate(code);
 }
 
-exports.testFormat = function() {
-    var code = testFileContents('testdata/simple.js');
-    print(code);
-    var parseTree = narcissus.parse(code);
-
-    print(narcissus.format(parseTree));
-}
-
 exports.testFunction = function() {
     // TODO: Make this work
     var code = testFileContents('testdata/function.js');
@@ -82,7 +74,6 @@ exports.testParseRealCode = function() {
     return; // disabled for Rhino
     var parseTree = narcissus.parse(code);
     print(json.stringify(parseTree, null, 2));
-    print(narcissus.format(parseTree));
 }
 
 exports.testBreak = function() {
