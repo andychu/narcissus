@@ -5,9 +5,20 @@
  */
 
 
-var get = function (object, key, fallback) {
-    if (Object.prototype.hasOwnProperty.call(object, key))
-        return object[key];
+// Retrieves only direct and simple properties for the given object.
+//
+// Due to this being a meta-interpreter, there are some tricky cases:
+//
+//   keywords['hasOwnProperty']
+//   keywords['__proto__']
+//
+// These should return the fallback!  We don't want the meta-properties.
+var getOwnAtomProperty = function (object, key, fallback) {
+    if (Object.prototype.hasOwnProperty.call(object, key)) {
+        var value = object[key];
+        // HACK to get rid of __proto__: test that isn't an object
+        return (typeof value === 'object') ? fallback : value;
+    }
     return fallback;
 };
 
@@ -59,8 +70,9 @@ Tokenizer.prototype = {
     },
 
     mustMatch: function (tt) {
-        if (!this.match(tt))
-            throw this.newSyntaxError("Missing " + tokens[tt].toLowerCase());
+        if (!this.match(tt)) {
+            throw this.newSyntaxError("Expected " + tokens[tt]);
+        }
         return this.token;
     },
 
@@ -137,7 +149,7 @@ Tokenizer.prototype = {
             token.value = parseInt(match[0]);
         } else if ((match = /^[$_\w]+/(input))) {       // FIXME no ES3 unicode
             var id = match[0];
-            token.type = get(keywords, id, defs.IDENTIFIER);
+            token.type = getOwnAtomProperty(keywords, id, defs.IDENTIFIER);
             token.value = id;
         } else if ((match = /^"(?:\\.|[^"])*"|^'(?:\\.|[^'])*'/(input))) { //"){
             token.type = defs.STRING;
