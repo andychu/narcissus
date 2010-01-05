@@ -301,8 +301,10 @@ Np.toJSON = function(key) {
       continue;
     if (name === 'tokenizer')  // not part of parse tree
       continue;
-    if (name === 'start' || name === 'end' || name == 'lineno')
-      continue;  // don't need these most of the time
+    // TODO: Make the presence of these attributes configurable, so the size of
+    // the JSON isn't too large
+    //if (name === 'start' || name === 'end' || name == 'lineno')
+    //  continue;  // don't need these most of the time
     if (name === 'length')
       continue;  // don't need length in JSON
     if (name === 'varDecls' || name === 'funDecls')
