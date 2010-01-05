@@ -45,7 +45,14 @@ def main(argv):
   filenames = [
       'patched/jsdefs.js',
       'patched/jsparse.js',
-      'patched/jsexec.js',
+
+      # TODO: jsexec does a lot of crap at the top level (at require()-time),
+      # including calling Object.defineProperty and such.  Most people only care
+      # about the parser, so disable it for now.
+      # Probably should factor it into a 'narcissus/exec' module, keeping
+      # 'narcissus' for the parser.
+      #'patched/jsexec.js',
+
       # TODO: probably don't need this, could delete
       #'patched/jsformat.js',
       ]
