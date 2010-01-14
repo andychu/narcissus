@@ -61,7 +61,7 @@ Tokenizer.prototype = {
         return this.peek() == defs.END;
     },
 
-    get token() {
+    token: function() {
         return this.tokens[this.tokenIndex];
     },
 
@@ -73,7 +73,7 @@ Tokenizer.prototype = {
         if (!this.match(tt)) {
             throw this.newSyntaxError("Expected " + tokens[tt]);
         }
-        return this.token;
+        return this.token();
     },
 
     peek: function () {
@@ -224,7 +224,7 @@ var top = function (stack) {
 };
 
 function Node(t, type) {
-    var token = t.token;
+    var token = t.token();
     if (token) {
         this.type = type || token.type;
         this.value = token.value;
@@ -522,7 +522,7 @@ function Statement(t, x) {
         n = new Node(t);
         if (t.peekOnSameLine() == defs.IDENTIFIER) {
             t.get();
-            n.label = t.token.value;
+            n.label = t.token().value;
         }
         ss = x.stmtStack;
         i = ss.length;
@@ -621,7 +621,7 @@ function Statement(t, x) {
             tt = t.peek();
             t.scanOperand = true;
             if (tt == defs.COLON) {
-                label = t.token.value;
+                label = t.token().value;
                 ss = x.stmtStack;
                 for (i = ss.length-1; i >= 0; --i) {
                     if (ss[i].label == label)
@@ -642,7 +642,7 @@ function Statement(t, x) {
         break;
     }
 
-    if (t.lineno == t.token.lineno) {
+    if (t.lineno == t.token().lineno) {
         tt = t.peekOnSameLine();
         if (tt != defs.END && tt != defs.NEWLINE && tt != defs.SEMICOLON && tt != defs.RIGHT_CURLY)
             throw t.newSyntaxError("Missing ; before statement");
@@ -656,7 +656,7 @@ function FunctionDefinition(t, x, requireName, functionForm) {
     if (f.type != defs.FUNCTION)
         f.type = (f.value == "get") ? defs.GETTER : defs.SETTER;
     if (t.match(defs.IDENTIFIER))
-        f.name = t.token.value;
+        f.name = t.token().value;
     else if (requireName)
         throw t.newSyntaxError("Missing function identifier");
 
@@ -666,7 +666,7 @@ function FunctionDefinition(t, x, requireName, functionForm) {
     while ((tt = t.get()) != defs.RIGHT_PAREN) {
         if (tt != defs.IDENTIFIER)
             throw t.newSyntaxError("Missing formal parameter");
-        f.params.push(t.token.value);
+        f.params.push(t.token().value);
         if (t.peek() != defs.RIGHT_PAREN)
             t.mustMatch(defs.COMMA);
     }
@@ -675,7 +675,7 @@ function FunctionDefinition(t, x, requireName, functionForm) {
     var x2 = new CompilerContext(true);
     f.body = Script(t, x2);
     t.mustMatch(defs.RIGHT_CURLY);
-    f.end = t.token.end;
+    f.end = t.token().end;
 
     f.functionForm = functionForm;
     if (functionForm == defs.DECLARED_FORM)
@@ -690,7 +690,7 @@ function Variables(t, x) {
         var n2 = new Node(t);
         n2.name = n2.value;
         if (t.match(defs.ASSIGN)) {
-            if (t.token.assignOp)
+            if (t.token().assignOp)
                 throw t.newSyntaxError("Invalid variable initialization");
             n2.initializer = Expression(t, x, defs.COMMA);
         }
@@ -785,8 +785,8 @@ function Expression(t, x, stop) {
             n.push(a[i]);
 
         // Include closing bracket or postfix operator in [start,end).
-        if (n.end < t.token.end)
-            n.end = t.token.end;
+        if (n.end < t.token().end)
+            n.end = t.token().end;
 
         operands.push(n);
         return n;
@@ -824,7 +824,7 @@ loop:
             } else {
                 operators.push(new Node(t));
                 if (tt == defs.ASSIGN)
-                    top(operands).assignOp = t.token.assignOp;
+                    top(operands).assignOp = t.token().assignOp;
                 else
                     ++x.hookLevel;      // tt == HOOK
             }
@@ -968,7 +968,7 @@ loop:
             if (!t.match(defs.RIGHT_CURLY)) {
                 do {
                     tt = t.get();
-                    if ((t.token.value == "get" || t.token.value == "set") &&
+                    if ((t.token().value == "get" || t.token().value == "set") &&
                         t.peek() == defs.IDENTIFIER) {
                         if (x.ecmaStrictMode)
                             throw t.newSyntaxError("Illegal property accessor");
