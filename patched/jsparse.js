@@ -61,7 +61,7 @@ Tokenizer.prototype = {
         return this.peek() == defs.END;
     },
 
-    token: function() {
+    get token() {
         return this.tokens[this.tokenIndex];
     },
 
@@ -73,7 +73,7 @@ Tokenizer.prototype = {
         if (!this.match(tt)) {
             throw this.newSyntaxError("Expected " + tokens[tt]);
         }
-        return this.token();
+        return this.token;
     },
 
     peek: function () {
