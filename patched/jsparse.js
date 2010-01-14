@@ -53,15 +53,15 @@ function Tokenizer(s, f, l) {
 
 Tokenizer.prototype = {
 
-    get input() {
+    input: function() {
         return this.source.substring(this.cursor);
     },
 
-    get done() {
+    done: function() {
         return this.peek() == defs.END;
     },
 
-    get token() {
+    token: function() {
         return this.tokens[this.tokenIndex];
     },
 
@@ -73,7 +73,7 @@ Tokenizer.prototype = {
         if (!this.match(tt)) {
             throw this.newSyntaxError("Expected " + tokens[tt]);
         }
-        return this.token;
+        return this.token();
     },
 
     peek: function () {
@@ -109,7 +109,7 @@ Tokenizer.prototype = {
         }
 
         for (;;) {
-            var input = this.input;
+            var input = this.input();
             var match = (this.scanNewlines ? /^[ \t]+/ : /^\s+/)(input);
             if (match) {
                 var spaces = match[0];
@@ -117,7 +117,7 @@ Tokenizer.prototype = {
                 var newlines = spaces.match(/\n/g);
                 if (newlines)
                     this.lineno += newlines.length;
-                input = this.input;
+                input = this.input();
             }
 
             if (!(match = /^\/(?:\*(?:.|\n)*?\*\/|\/.*)/(input)))
@@ -340,7 +340,7 @@ Np.toString = function () {
             a.push({id: i, value: this[i]});
     }
     a.sort(function (a,b) { return (a.id < b.id) ? -1 : 1; });
-    const INDENTATION = "    ";
+    var INDENTATION = "    ";
     var n = ++Node.indentLevel;
     var s = "{\n" + repeat(INDENTATION, n) + "type: " + tokenstr(this.type);
     for (i = 0; i < a.length; i++)
@@ -378,7 +378,7 @@ function nest(t, x, node, func, end) {
 function Statements(t, x) {
     var n = new Node(t, defs.BLOCK);
     x.stmtStack.push(n);
-    while (!t.done && t.peek() != defs.RIGHT_CURLY) {
+    while (!t.done() && t.peek() != defs.RIGHT_CURLY) {
         n.push(Statement(t, x));
     }
     x.stmtStack.pop();
@@ -1086,7 +1086,7 @@ var parse = exports.parse = function (s, f, l) {
     var t = new Tokenizer(s, f, l);
     var x = new CompilerContext(false);
     var n = Script(t, x);
-    if (!t.done)
+    if (!t.done())
         throw t.newSyntaxError("Syntax error");
     return n;
 }
