@@ -778,7 +778,11 @@ var opPrecedence = {
 
 // Map operator type code to precedence.
 for (var i in opPrecedence) {
-    opPrecedence[defs[i]] = opPrecedence[i];
+    var k = defs[i];
+    if (k === undefined) {
+        throw {name: 'BadKey', message: i};
+    }
+    opPrecedence[k] = opPrecedence[i];
 }
 
 var opArity = {
@@ -803,8 +807,13 @@ var opArity = {
 };
 
 // Map operator type code to arity.
-for (i in opArity)
-    opArity[defs[i]] = opArity[i];
+for (var i in opArity) {
+    var k = defs[i];
+    if (k === undefined) {
+        throw {name: 'BadKey', message: i};
+    }
+    opArity[k] = opArity[i];
+}
 
 function Expression(t, x, stop) {
     var n, id, tt, operators = [], operands = [];
