@@ -110,7 +110,12 @@ Tokenizer.prototype = {
 
         for (;;) {
             var input = this.input();
-            var match = (this.scanNewlines ? /^[ \t]+/ : /^\s+/)(input);
+            var match;
+            if (this.scanNewlines) {
+              match = input.match(/^[ \t]+/);
+            } else {
+              match = input.match(/^\s+/);
+            }
             if (match) {
                 var spaces = match[0];
                 this.cursor += spaces.length;
@@ -120,7 +125,7 @@ Tokenizer.prototype = {
                 input = this.input();
             }
 
-            if (!(match = /^\/(?:\*(?:.|\n)*?\*\/|\/.*)/(input)))
+            if (!(match = input.match(/^\/(?:\*(?:.|\n)*?\*\/|\/.*)/)))
                 break;
             var comment = match[0];
 
@@ -141,23 +146,23 @@ Tokenizer.prototype = {
         if (!input)
             return token.type = defs.END;
 
-        if ((match = fpRegExp(input))) {
+        if ((match = input.match(fpRegExp))) {
             token.type = defs.NUMBER;
             token.value = parseFloat(match[0]);
-        } else if ((match = /^0[xX][\da-fA-F]+|^0[0-7]*|^\d+/(input))) {
+        } else if ((match = input.match(/^0[xX][\da-fA-F]+|^0[0-7]*|^\d+/))) {
             token.type = defs.NUMBER;
             token.value = parseInt(match[0]);
-        } else if ((match = /^[$_\w]+/(input))) {       // FIXME no ES3 unicode
+        } else if ((match = input.match(/^[$_\w]+/))) {       // FIXME no ES3 unicode
             var id = match[0];
             token.type = getOwnAtomProperty(keywords, id, defs.IDENTIFIER);
             token.value = id;
-        } else if ((match = /^"(?:\\.|[^"])*"|^'(?:\\.|[^'])*'/(input))) { //"){
+        } else if ((match = input.match(/^"(?:\\.|[^"])*"|^'(?:\\.|[^'])*'/))) { //"){
             token.type = defs.STRING;
             token.value = eval(match[0]);
-        } else if (this.scanOperand && (match = reRegExp(input))) {
+        } else if (this.scanOperand && (match = input.match(reRegExp))) {
             token.type = defs.REGEXP;
             token.value = new RegExp(match[1], match[2]);
-        } else if ((match = opRegExp(input))) {
+        } else if ((match = input.match(opRegExp))) {
             var op = match[0];
             if (assignOps[op] && input[op.length] == '=') {
                 token.type = defs.ASSIGN;
@@ -172,7 +177,7 @@ Tokenizer.prototype = {
                 token.assignOp = null;
             }
             token.value = op;
-        } else if (this.scanNewlines && (match = /^\n/(input))) {
+        } else if (this.scanNewlines && (match = input.match(/^\n/))) {
             token.type = defs.NEWLINE;
         } else {
             throw this.newSyntaxError("Illegal token");
