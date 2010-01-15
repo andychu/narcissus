@@ -847,7 +847,7 @@ function Expression(t, x, stop) {
         }
 
         // Always use push to add operands to n, to update start and end.
-        var a = operands.splice(operands.length - arity);
+        var a = operands.splice(operands.length - arity, operands.length);
         for (var i = 0; i < arity; i++) {
             n.push(a[i]);
         }
