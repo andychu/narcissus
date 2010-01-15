@@ -776,13 +776,18 @@ var opPrecedence = {
     DOT: 17
 };
 
-// Map operator type code to precedence.
-for (var i in opPrecedence) {
-    var k = defs[i];
-    if (k === undefined) {
-        throw {name: 'BadKey', message: i};
+// Map operator type code to precedence.  Done in 2 steps so we don't modify a
+// hash while iterating over it.
+var tmpPrecedence = {};
+for (var name in opPrecedence) {
+    var i = defs[name];
+    if (i === undefined) {
+        throw {name: 'BadKey', message: name};
     }
-    opPrecedence[k] = opPrecedence[i];
+    tmpPrecedence[i] = opPrecedence[name];
+}
+for (var i in tmpPrecedence) {
+  opPrecedence[i] = tmpPrecedence[i];
 }
 
 var opArity = {
@@ -806,14 +811,20 @@ var opArity = {
     ARRAY_INIT: 1, OBJECT_INIT: 1, GROUP: 1
 };
 
-// Map operator type code to arity.
-for (var i in opArity) {
-    var k = defs[i];
-    if (k === undefined) {
-        throw {name: 'BadKey', message: i};
+// Map operator type code to arity.  Done in 2 steps so we don't modify a hash
+// while iterating over it.
+var tmpArity = {};
+for (var name in opArity) {
+    var i = defs[name];
+    if (i === undefined) {
+        throw {name: 'BadKey', message: name};
     }
-    opArity[k] = opArity[i];
+    tmpArity[i] = opArity[name];
 }
+for (var i in tmpArity) {
+  opArity[i] = tmpArity[i];
+}
+
 
 function Expression(t, x, stop) {
     var n, id, tt, operators = [], operands = [];
