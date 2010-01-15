@@ -111,9 +111,9 @@ Tokenizer.prototype = {
                 return token.type;
         }
 
+        var input, match;
         for (;;) {
-            var input = this.input();
-            var match;
+            input = this.input();
             if (this.scanNewlines) {
               match = input.match(/^[ \t]+/);
             } else {
@@ -343,6 +343,13 @@ function tokenstr(tt) {
     return /^\W/.test(t) ? opTypeNames[t] : t.toUpperCase();
 }
 
+var repeat = function (string, n) {
+    var s = "", t = string + s;
+    while (--n >= 0)
+        s += t;
+    return s;
+};
+
 Np.toString = function () {
     var a = [];
     for (var i in this) {
@@ -358,7 +365,7 @@ Np.toString = function () {
     n = --Node.indentLevel;
     s += "\n" + repeat(INDENTATION, n) + "}";
     return s;
-}
+};
 
 Np.getSource = function () {
     return this.tokenizer.source.slice(this.start, this.end);
@@ -366,13 +373,6 @@ Np.getSource = function () {
 
 Np.getFilename = function () {
     return this.tokenizer.filename;
-};
-
-var repeat = function (string, n) {
-    var s = "", t = string + s;
-    while (--n >= 0)
-        s += t;
-    return s;
 };
 
 // Statement stack and nested statement handler.
@@ -412,10 +412,9 @@ function Statement(t, x) {
     // common semicolon insertion magic after this switch.
     switch (tt) {
       case defs.FUNCTION:
-        return FunctionDefinition(t, x, true,
-                                  (x.stmtStack.length > 1)
-                                  ? STATEMENT_FORM
-                                  : DECLARED_FORM);
+        return FunctionDefinition(
+            t, x, true,
+            (x.stmtStack.length > 1) ? STATEMENT_FORM : DECLARED_FORM);
 
       case defs.LEFT_CURLY:
         n = Statements(t, x);
@@ -545,9 +544,8 @@ function Statement(t, x) {
         } else {
             do {
                 if (--i < 0) {
-                    throw t.newSyntaxError("Invalid " + ((tt == defs.BREAK)
-                                                         ? "break"
-                                                         : "continue"));
+                    throw t.newSyntaxError("Invalid " + (
+                          (tt == defs.BREAK) ? "break" : "continue"));
                 }
             } while (!ss[i].isLoop && (tt != defs.BREAK || ss[i].type != defs.SWITCH));
         }
