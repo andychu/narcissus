@@ -560,8 +560,9 @@ function Statement(t, x) {
         label = n.label;
         if (label) {
             do {
-                if (--i < 0)
+                if (--i < 0) {
                     throw t.newSyntaxError("Label not found");
+                }
             } while (ss[i].label != label);
         } else {
             do {
@@ -583,10 +584,12 @@ function Statement(t, x) {
             t.mustMatch(defs.LEFT_PAREN);
             n2.varName = t.mustMatch(defs.IDENTIFIER).value;
             if (t.match(defs.IF)) {
-                if (x.ecmaStrictMode)
+                if (x.ecmaStrictMode) {
                     throw t.newSyntaxError("Illegal catch guard");
-                if (n.catchClauses.length && !top(n.catchClauses).guard)
+                }
+                if (n.catchClauses.length && !top(n.catchClauses).guard) {
                     throw t.newSyntaxError("Guarded catch after unguarded");
+                }
                 n2.guard = Expression(t, x);
             } else {
                 n2.guard = null;
@@ -595,10 +598,12 @@ function Statement(t, x) {
             n2.block = Block(t, x);
             n.catchClauses.push(n2);
         }
-        if (t.match(defs.FINALLY))
+        if (t.match(defs.FINALLY)) {
             n.finallyBlock = Block(t, x);
-        if (!n.catchClauses.length && !n.finallyBlock)
+        }
+        if (!n.catchClauses.length && !n.finallyBlock) {
             throw t.newSyntaxError("Invalid try statement");
+        }
         return n;
 
       case defs.CATCH:
@@ -611,17 +616,18 @@ function Statement(t, x) {
         break;
 
       case defs.RETURN:
-        if (!x.inFunction)
+        if (!x.inFunction) {
             throw t.newSyntaxError("Invalid return");
+        }
         n = new Node(t);
         tt = t.peekOnSameLine();
-        if (
-            tt != defs.END &&
+        if (tt != defs.END &&
             tt != defs.NEWLINE &&
             tt != defs.SEMICOLON &&
-            tt != defs.RIGHT_CURLY
-        )
+            tt != defs.RIGHT_CURLY)
+        {
             n.value = Expression(t, x);
+        }
         break;
 
       case defs.WITH:
@@ -674,8 +680,13 @@ function Statement(t, x) {
 
     if (t.lineno == t.token().lineno) {
         tt = t.peekOnSameLine();
-        if (tt != defs.END && tt != defs.NEWLINE && tt != defs.SEMICOLON && tt != defs.RIGHT_CURLY)
+        if (tt != defs.END &&
+            tt != defs.NEWLINE &&
+            tt != defs.SEMICOLON &&
+            tt != defs.RIGHT_CURLY)
+        {
             throw t.newSyntaxError("Missing ; before statement");
+        }
     }
     t.match(defs.SEMICOLON);
     return n;
@@ -683,19 +694,22 @@ function Statement(t, x) {
 
 function FunctionDefinition(t, x, requireName, functionForm) {
     var f = new Node(t);
-    if (f.type != defs.FUNCTION)
+    if (f.type != defs.FUNCTION) {
         f.type = (f.value == "get") ? defs.GETTER : defs.SETTER;
-    if (t.match(defs.IDENTIFIER))
+    }
+    if (t.match(defs.IDENTIFIER)) {
         f.name = t.token().value;
-    else if (requireName)
+    } else if (requireName) {
         throw t.newSyntaxError("Missing function identifier");
+    }
 
     t.mustMatch(defs.LEFT_PAREN);
     f.params = [];
     var tt;
     while ((tt = t.get()) != defs.RIGHT_PAREN) {
-        if (tt != defs.IDENTIFIER)
+        if (tt != defs.IDENTIFIER) {
             throw t.newSyntaxError("Missing formal parameter");
+        }
         f.params.push(t.token().value);
         if (t.peek() != defs.RIGHT_PAREN)
             t.mustMatch(defs.COMMA);
@@ -708,8 +722,9 @@ function FunctionDefinition(t, x, requireName, functionForm) {
     f.end = t.token().end;
 
     f.functionForm = functionForm;
-    if (functionForm == defs.DECLARED_FORM)
+    if (functionForm == defs.DECLARED_FORM) {
         x.funDecls.push(f);
+    }
     return f;
 }
 
@@ -720,8 +735,9 @@ function Variables(t, x) {
         var n2 = new Node(t);
         n2.name = n2.value;
         if (t.match(defs.ASSIGN)) {
-            if (t.token().assignOp)
+            if (t.token().assignOp) {
                 throw t.newSyntaxError("Invalid variable initialization");
+            }
             n2.initializer = Expression(t, x, defs.COMMA);
         }
         n2.readOnly = (n.type == defs.CONST);
@@ -811,12 +827,14 @@ function Expression(t, x, stop) {
 
         // Always use push to add operands to n, to update start and end.
         var a = operands.splice(operands.length - arity);
-        for (var i = 0; i < arity; i++)
+        for (var i = 0; i < arity; i++) {
             n.push(a[i]);
+        }
 
         // Include closing bracket or postfix operator in [start,end).
-        if (n.end < t.token().end)
+        if (n.end < t.token().end) {
             n.end = t.token().end;
+        }
 
         operands.push(n);
         return n;
@@ -839,8 +857,9 @@ loop:
           case defs.ASSIGN:
           case defs.HOOK:
           case defs.COLON:
-            if (t.scanOperand)
+            if (t.scanOperand) {
                 break loop;
+            }
             // Use >, not >=, for right-associative ASSIGN and HOOK/COLON.
             while (opPrecedence[top(operators).type] > opPrecedence[tt] ||
                    (tt == defs.COLON && top(operators).type == defs.ASSIGN)) {
@@ -848,15 +867,17 @@ loop:
             }
             if (tt == defs.COLON) {
                 n = top(operators);
-                if (n.type != defs.HOOK)
+                if (n.type != defs.HOOK) {
                     throw t.newSyntaxError("Invalid label");
+                }
                 --x.hookLevel;
             } else {
                 operators.push(new Node(t));
-                if (tt == defs.ASSIGN)
+                if (tt == defs.ASSIGN) {
                     top(operands).assignOp = t.token().assignOp;
-                else
+                } else {
                     ++x.hookLevel;      // tt == HOOK
+                }
             }
             t.scanOperand = true;
             break;
@@ -886,10 +907,12 @@ loop:
           case defs.PLUS: case defs.MINUS:
           case defs.MUL: case defs.DIV: case defs.MOD:
           case defs.DOT:
-            if (t.scanOperand)
+            if (t.scanOperand) {
                 break loop;
-            while (opPrecedence[top(operators).type] >= opPrecedence[tt])
+            }
+            while (opPrecedence[top(operators).type] >= opPrecedence[tt]) {
                 reduce();
+            }
             if (tt == defs.DOT) {
                 t.mustMatch(defs.IDENTIFIER);
                 operands.push(new Node(t, defs.DOT, operands.pop(), new Node(t)));
@@ -907,8 +930,9 @@ loop:
           case defs.UNARY_PLUS:
           case defs.UNARY_MINUS:
           case defs.NEW:
-            if (!t.scanOperand)
+            if (!t.scanOperand) {
                 break loop;
+            }
             operators.push(new Node(t));
             break;
 
@@ -933,8 +957,9 @@ loop:
             break;
 
           case defs.FUNCTION:
-            if (!t.scanOperand)
+            if (!t.scanOperand) {
                 break loop;
+            }
             operands.push(FunctionDefinition(t, x, false, defs.EXPRESSED_FORM));
             t.scanOperand = false;
             break;
@@ -947,8 +972,9 @@ loop:
           case defs.NUMBER:
           case defs.STRING:
           case defs.REGEXP:
-            if (!t.scanOperand)
+            if (!t.scanOperand) {
                 break loop;
+            }
             operands.push(new Node(t));
             t.scanOperand = false;
             break;
@@ -1116,7 +1142,8 @@ var parse = exports.parse = function (s, f, l) {
     var t = new Tokenizer(s, f, l);
     var x = new CompilerContext(false);
     var n = Script(t, x);
-    if (!t.done())
+    if (!t.done()) {
         throw t.newSyntaxError("Syntax error");
+    }
     return n;
-}
+};
