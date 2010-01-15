@@ -107,11 +107,12 @@ Tokenizer.prototype = {
             --this.lookahead;
             this.tokenIndex = (this.tokenIndex + 1) & 3;
             token = this.tokens[this.tokenIndex];
-            if (token.type != defs.NEWLINE || this.scanNewlines)
+            if (token.type != defs.NEWLINE || this.scanNewlines) {
                 return token.type;
+            }
         }
 
-        var input, match;
+        var input, match, newlines;
         for (;;) {
             input = this.input();
             if (this.scanNewlines) {
@@ -122,14 +123,16 @@ Tokenizer.prototype = {
             if (match) {
                 var spaces = match[0];
                 this.cursor += spaces.length;
-                var newlines = spaces.match(/\n/g);
-                if (newlines)
+                newlines = spaces.match(/\n/g);
+                if (newlines) {
                     this.lineno += newlines.length;
+                }
                 input = this.input();
             }
 
-            if (!(match = input.match(/^\/(?:\*(?:.|\n)*?\*\/|\/.*)/)))
+            if (!(match = input.match(/^\/(?:\*(?:.|\n)*?\*\/|\/.*)/))) {
                 break;
+            }
             var comment = match[0];
 
             // TODO: EXPOSE COMMENTS, with singleLine: true/false
@@ -137,14 +140,16 @@ Tokenizer.prototype = {
 
             this.cursor += comment.length;
             newlines = comment.match(/\n/g);
-            if (newlines)
+            if (newlines) {
                 this.lineno += newlines.length;
+            }
         }
 
         this.tokenIndex = (this.tokenIndex + 1) & 3;
         token = this.tokens[this.tokenIndex];
-        if (!token)
+        if (!token) {
             this.tokens[this.tokenIndex] = token = {};
+        }
 
         if (!input) {
             token.type = defs.END;
@@ -196,7 +201,9 @@ Tokenizer.prototype = {
     },
 
     unget: function () {
-        if (++this.lookahead == 4) throw "PANIC: too much lookahead!";
+        if (++this.lookahead == 4) {
+            throw "PANIC: too much lookahead!";
+        }
         this.tokenIndex = (this.tokenIndex - 1) & 3;
     },
 
@@ -247,8 +254,9 @@ function Node(t, type) {
     }
     this.tokenizer = t;
 
-    for (var i = 2; i < arguments.length; i++)
+    for (var i = 2; i < arguments.length; i++) {
         this.push(arguments[i]);
+    }
 }
 
 var Np = Node.prototype = new Array;
@@ -257,12 +265,14 @@ Np.toSource = Object.prototype.toSource;
 
 // Always use push to add operands to an expression, to update start and end.
 Np.push = function (kid) {
-    if (kid.start < this.start)
+    if (kid.start < this.start) {
         this.start = kid.start;
-    if (this.end < kid.end)
+    }
+    if (this.end < kid.end) {
         this.end = kid.end;
+    }
     return Array.prototype.push.call(this, kid);
-}
+};
 
 Np.toJSON = function(key) {
   //print('key ' + key);
@@ -302,39 +312,44 @@ Np.toJSON = function(key) {
   }
 
   for (var name in this) {
-    if (!this.hasOwnProperty(name))
-      continue;
+    if (!this.hasOwnProperty(name)) {
+        continue;
+    }
     // Nodes are Arrays, but they also have attributes.  I want to iterate over
     // all the attributes, but not get "0", "1", etc., so do this parseInt hack.
     // NaN is not >= 0.
-    if (transformed && parseInt(name) >= 0)
-      continue;
-    if (name === 'tokenizer')  // not part of parse tree
-      continue;
+    if (transformed && parseInt(name) >= 0) {
+        continue;
+    }
+    if (name === 'tokenizer')  { // not part of parse tree
+        continue;
+    }
     // TODO: Make the presence of these attributes configurable, so the size of
     // the JSON isn't too large
     //if (name === 'start' || name === 'end' || name == 'lineno')
     //  continue;  // don't need these most of the time
-    if (name === 'length')
-      continue;  // don't need length in JSON
-    if (name === 'varDecls' || name === 'funDecls')
-      continue;  // generally redundant with what's already in the tree
+    if (name === 'length') {
+        continue;  // don't need length in JSON
+    }
+    if (name === 'varDecls' || name === 'funDecls') {
+        continue;  // generally redundant with what's already in the tree
+    }
 
     // When printing JSON, the 'target' attr for BREAK or CONTINUE is a code
     // object, which causes an infinite loop
     if (name === 'target') {
-      continue;
+        continue;
     }
 
     if (name === 'type') {
-      jsonObj.type = tokens[this.type];
-      continue;
+        jsonObj.type = tokens[this.type];
+        continue;
     }
     jsonObj[name] = this[name];
   }
 
   return jsonObj;
-}
+};
 
 Node.indentLevel = 0;
 
@@ -345,23 +360,26 @@ function tokenstr(tt) {
 
 var repeat = function (string, n) {
     var s = "", t = string + s;
-    while (--n >= 0)
+    while (--n >= 0) {
         s += t;
+    }
     return s;
 };
 
 Np.toString = function () {
     var a = [];
     for (var i in this) {
-        if (this.hasOwnProperty(i) && i != 'type' && i != 'target')
+        if (this.hasOwnProperty(i) && i != 'type' && i != 'target') {
             a.push({id: i, value: this[i]});
+        }
     }
     a.sort(function (a,b) { return (a.id < b.id) ? -1 : 1; });
     var INDENTATION = "    ";
     var n = ++Node.indentLevel;
     var s = "{\n" + repeat(INDENTATION, n) + "type: " + tokenstr(this.type);
-    for (i = 0; i < a.length; i++)
+    for (i = 0; i < a.length; i++) {
         s += ",\n" + repeat(INDENTATION, n) + a[i].id + ": " + a[i].value;
+    }
     n = --Node.indentLevel;
     s += "\n" + repeat(INDENTATION, n) + "}";
     return s;
@@ -442,23 +460,27 @@ function Statement(t, x) {
         while ((tt = t.get()) != defs.RIGHT_CURLY) {
             switch (tt) {
               case defs.DEFAULT:
-                if (n.defaultIndex >= 0)
+                if (n.defaultIndex >= 0) {
                     throw t.newSyntaxError("More than one switch default");
+                }
                 // FALL THROUGH
               case defs.CASE:
                 n2 = new Node(t);
-                if (tt == defs.DEFAULT)
+                if (tt == defs.DEFAULT) {
                     n.defaultIndex = n.cases.length;
-                else
+                } else {
                     n2.caseLabel = Expression(t, x, defs.COLON);
+                }
                 break;
               default:
                 throw t.newSyntaxError("Invalid switch case");
             }
             t.mustMatch(defs.COLON);
             n2.statements = new Node(t, defs.BLOCK);
-            while ((tt=t.peek()) != defs.CASE && tt != defs.DEFAULT && tt != defs.RIGHT_CURLY)
+            while ((tt=t.peek()) != defs.CASE &&
+                   tt != defs.DEFAULT && tt != defs.RIGHT_CURLY) {
                 n2.statements.push(Statement(t, x));
+            }
             n.cases.push(n2);
         }
         x.stmtStack.pop();
