@@ -777,8 +777,9 @@ var opPrecedence = {
 };
 
 // Map operator type code to precedence.
-for (i in opPrecedence)
+for (var i in opPrecedence) {
     opPrecedence[defs[i]] = opPrecedence[i];
+}
 
 var opArity = {
     COMMA: -2,
