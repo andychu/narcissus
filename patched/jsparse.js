@@ -24,17 +24,19 @@ var getOwnAtomProperty = function (object, key, fallback) {
 
 // Build a regexp that recognizes operators and punctuators (except newline).
 var opRegExpSrc = "^";
-for (i in opTypeNames) {
-    if (i == '\n')
+for (var i in opTypeNames) {
+    if (i == '\n') {
         continue;
-    if (opRegExpSrc != "^")
+    }
+    if (opRegExpSrc != "^") {
         opRegExpSrc += "|^";
-    opRegExpSrc += i.replace(/[?|^&(){}\[\]+\-*\/\.]/g, "\\$&");
+    }
+    opRegExpSrc += i.replace(/[?|\^&(){}\[\]+\-*\/\.]/g, "\\$&");
 }
 var opRegExp = new RegExp(opRegExpSrc);
 
 // A regexp to match floating point literals (but not integer literals).
-var fpRegExp = /^\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?/;
+var fpRegExp = /^\d+\.\d*(?:[eE][\-+]?\d+)?|^\d+(?:\.\d*)?[eE][\-+]?\d+|^\.\d+(?:[eE][\-+]?\d+)?/;
 
 // A regexp to match regexp literals.
 var reRegExp = /^\/((?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+)\/([gimy]*)/;
@@ -80,10 +82,11 @@ Tokenizer.prototype = {
         var tt, next;
         if (this.lookahead) {
             next = this.tokens[(this.tokenIndex + this.lookahead) & 3];
-            if (this.scanNewlines && next.lineno != this.lineno)
+            if (this.scanNewlines && next.lineno != this.lineno) {
                 tt = defs.NEWLINE;
-            else
+            } else {
                 tt = next.type;
+            }
         } else {
             tt = this.get();
             this.unget();
@@ -135,7 +138,7 @@ Tokenizer.prototype = {
             this.cursor += comment.length;
             newlines = comment.match(/\n/g);
             if (newlines)
-                this.lineno += newlines.length
+                this.lineno += newlines.length;
         }
 
         this.tokenIndex = (this.tokenIndex + 1) & 3;
@@ -143,8 +146,10 @@ Tokenizer.prototype = {
         if (!token)
             this.tokens[this.tokenIndex] = token = {};
 
-        if (!input)
-            return token.type = defs.END;
+        if (!input) {
+            token.type = defs.END;
+            return token.type;
+        }
 
         if ((match = input.match(fpRegExp))) {
             token.type = defs.NUMBER;
