@@ -173,8 +173,9 @@ Tokenizer.prototype = {
             token.type = defs.REGEXP;
             token.value = new RegExp(match[1], match[2]);
         } else if ((match = input.match(opRegExp))) {
-            var op = match[0];
-            if (assignOps[op] && input[op.length] == '=') {
+            var op = match[0],
+                nextChar = input.charAt(op.length);
+            if (assignOps[op] && (nextChar == '=')) {
                 token.type = defs.ASSIGN;
                 token.assignOp = defs[opTypeNames[op]];
                 match[0] += '=';
@@ -209,7 +210,8 @@ Tokenizer.prototype = {
 
     newSyntaxError: function (m) {
         var e = new SyntaxError(m, this.filename, this.lineno);
-        e.source = this.source;
+        // This is just the entire file; omit it since it's big
+        //e.source = this.source;
         e.cursor = this.cursor;
         return e;
     }

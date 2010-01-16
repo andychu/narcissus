@@ -125,5 +125,5 @@ var assignOps = {};
 
 for (i = 0, j = tmpAssignOps.length; i < j; i++) {
     var o = tmpAssignOps[i];
-    assignOps[o] = true;  // PATCH: Only used for existence check
+    assignOps[o] = tokens[o];
 }
