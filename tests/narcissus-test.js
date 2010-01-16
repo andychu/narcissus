@@ -110,7 +110,8 @@ exports.testTokenizer = function() {
     print(code);
     var t = new narcissus.Tokenizer(code);
     for (var i=0; i<10; i++) {
-      print(t.get());
+      var type = t.get();
+      print('type ' + narcissus.tokens[type]);
       var token = t.token();
       print(json.stringify(token));
       //print(t.token());

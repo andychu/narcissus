@@ -7,7 +7,8 @@
  * done by SpiderMonkey.
  */
 
-var tokens = [
+// Exposed for printing token types
+var tokens = exports.tokens = [
     // End of source.
     "END",
 
