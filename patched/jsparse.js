@@ -240,6 +240,8 @@ var top = function (stack) {
     return stack.length && stack[stack.length-1];
 };
 
+// t: tokenizer
+// type: AST node type
 function Node(t, type) {
     var token = t.token();
     if (token) {
@@ -254,27 +256,25 @@ function Node(t, type) {
     }
     this.tokenizer = t;
 
+    this.length = 0;
+
     for (var i = 2; i < arguments.length; i++) {
-        this.push(arguments[i]);
+        this[this.length++] = arguments[i];
     }
 }
 
-var Np = Node.prototype = new Array;
-Np.constructor = Node;
-Np.toSource = Object.prototype.toSource;
-
 // Always use push to add operands to an expression, to update start and end.
-Np.push = function (kid) {
+Node.prototype.push = function (kid) {
     if (kid.start < this.start) {
         this.start = kid.start;
     }
     if (this.end < kid.end) {
         this.end = kid.end;
     }
-    return Array.prototype.push.call(this, kid);
+    this[this.length++] = kid;
 };
 
-Np.toJSON = function(key) {
+Node.prototype.toJSON = function(key) {
   //print('key ' + key);
   //print('toJSON ' + tj++ + ' ' + this.type + ' ' + this.name + ' ' + this.value);
   var jsonObj = {},
@@ -366,7 +366,7 @@ var repeat = function (string, n) {
     return s;
 };
 
-Np.toString = function () {
+Node.prototype.toString = function () {
     var a = [];
     for (var i in this) {
         if (this.hasOwnProperty(i) && i != 'type' && i != 'target') {
@@ -385,11 +385,11 @@ Np.toString = function () {
     return s;
 };
 
-Np.getSource = function () {
+Node.prototype.getSource = function () {
     return this.tokenizer.source.slice(this.start, this.end);
 };
 
-Np.getFilename = function () {
+Node.prototype.getFilename = function () {
     return this.tokenizer.filename;
 };
 
