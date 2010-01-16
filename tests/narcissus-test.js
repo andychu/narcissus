@@ -105,5 +105,18 @@ exports.testBreak = function() {
     //print(json.stringify(parseTree, null, 2));
 }
 
+exports.testTokenizer = function() {
+    var code = testFileContents('testdata/break.js');
+    print(code);
+    var t = new narcissus.Tokenizer(code);
+    for (var i=0; i<10; i++) {
+      print(t.get());
+      var token = t.token();
+      print(json.stringify(token));
+      //print(t.token());
+    }
+}
+
+
 if (require.main === module.id)
     require("test/runner").run(exports);

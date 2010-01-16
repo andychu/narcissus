@@ -41,16 +41,16 @@ var fpRegExp = /^\d+\.\d*(?:[eE][\-+]?\d+)?|^\d+(?:\.\d*)?[eE][\-+]?\d+|^\.\d+(?
 // A regexp to match regexp literals.
 var reRegExp = /^\/((?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+)\/([gimy]*)/;
 
-function Tokenizer(s, f, l) {
+var Tokenizer = exports.Tokenizer = function(source, filename, lineno) {
     this.cursor = 0;
-    this.source = String(s);
+    this.source = String(source);
     this.tokens = [];
     this.tokenIndex = 0;
     this.lookahead = 0;
     this.scanNewlines = false;
     this.scanOperand = true;
-    this.filename = f || "";
-    this.lineno = l || 1;
+    this.filename = filename || "";
+    this.lineno = lineno || 1;
 }
 
 Tokenizer.prototype = {
