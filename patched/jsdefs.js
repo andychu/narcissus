@@ -44,17 +44,17 @@ var tokens = exports.tokens = [
     "IDENTIFIER", "NUMBER", "STRING", "REGEXP",
 
     // Keywords.
-    "break",
+    "break",  // 60
     "case", "catch", "const", "continue",
     "debugger", "default", "delete", "do",
-    "else", "enum",
+    "else", "enum",  // 69 70
     "false", "finally", "for", "function",
     "if", "in", "instanceof",
     "new", "null",
-    "return",
+    "return",  // 80
     "switch",
     "this", "throw", "true", "try", "typeof",
-    "var", "void",
+    "var", "void",  // 87
     "while", "with"
 ];
 
