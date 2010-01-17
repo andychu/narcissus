@@ -110,13 +110,17 @@ var defs = {};
 
 // Define const END, etc., based on the token names.  Also map name to index.
 for (var i = 0, j = tokens.length; i < j; i++) {
-    var t = tokens[i];
+    var t = tokens[i],
+        name;
     if (/^[a-z]/.test(t)) {
-        defs[t.toUpperCase()] = i;
+        name = t.toUpperCase();
         keywords[t] = i;
     } else {
-        defs[/^\W/.test(t) ? opTypeNames[t] : t] = i;
+        name = /^\W/.test(t) ? opTypeNames[t] : t
     }
+    defs[name] = i;
+    // Duplicate copy at top level for clients: narcissus.LEFT_BRACKET, etc.
+    exports[name] = i;  
     tokens[t] = i;
 }
 
